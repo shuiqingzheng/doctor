@@ -41,6 +41,9 @@ class BaseRegisterView(object):
         return self.serializer_class
 
     def create(self, request, *args, **kwargs):
+        """
+        - 注册接口
+        """
         # 验证数据
         serializer = AdminUserRegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -70,22 +73,42 @@ class PatientView(BaseRegisterView, viewsets.ModelViewSet):
     serializer_class = PatientSerializer
     model = PatientUser
 
-    def index(self, request, *args, **kwargs):
+    def main(self, request, *args, **kwargs):
+        """
+        - 复诊主页面
+        - 返回：复诊量排名前三[列表]，最低收费的医生[json]，复诊过的专家（分登录前和登陆后）[列表]
+        """
         response_context = dict()
+        already_doctor = DoctorUser.objects.filter(bool_referral=True)
         # 复诊排名前三
         results = DiaDetail.objects.values('doctor_id').annotate(dia=Count('doctor_id')).order_by('-dia')
-        # <QuerySet [{'dia': 3, 'doctor_id': 2}, {'dia': 1, 'doctor_id': 3}]>
         try:
-            doctor_objs = [DoctorUser.objects.get(id=result.get('doctor_id')) for num, result in enumerate(results) if num < 3]
+            doctor_objs = [already_doctor.get(id=result.get('doctor_id')) for num, result in enumerate(results) if num < 3]
         except DoctorUser.DoesNotExist:
-            pass
-
-        print(doctor_objs)
+            response_context['top_user'] = None
+        else:
+            serializer_top = DoctorSerializer(instance=doctor_objs, many=True, context={"request": request})
+            response_context['top_user'] = serializer_top.data
         # 复诊对低价
-        b = DoctorUser.objects.filter(bool_referral=True).aggregate(Min('referral'))
-        print(b)
-        response_context['min_price'] = b
+        b = already_doctor.aggregate(Min('referral'))
+        n = already_doctor.filter(referral__exact=b.get('referral__min'))[0]
+        serializer_min = DoctorSerializer(instance=n, context={"request": request})
+        response_context['min_price_user'] = serializer_min.data
         # 自己曾咨询过的复诊（未登录的话就不显示）
+        auth = request.auth
+        if auth:
+            # 登录状态
+            diadetail_objs = DiaDetail.objects.filter(patient_id=auth.user.id).order_by().values('doctor_id').distinct()
+            try:
+                dia_doctor_objs = [already_doctor.get(id=result.get('doctor_id')) for num, result in enumerate(diadetail_objs)]
+            except DoctorUser.DoesNotExist:
+                response_context['after_user'] = None
+            else:
+                serializer_top = DoctorSerializer(instance=dia_doctor_objs, many=True, context={"request": request})
+                response_context['after_user'] = serializer_top.data
+        else:
+            # 未登录状态
+            response_context['after_user'] = None
         return Response(response_context)
 
     def find(self, request, *args, **kwargs):

@@ -173,7 +173,7 @@ REST_FRAMEWORK = {
 SWAGGER_SETTINGS = {
     'USE_SESSION_AUTH': False,
     'SECURITY_DEFINITIONS': {
-        '家庭医生系统': {
+        '汉典云健康系统API': {
             'type': 'oauth2',
             'authorizationUrl': '/o/authorize/',
             'tokenUrl': '/o/token/',

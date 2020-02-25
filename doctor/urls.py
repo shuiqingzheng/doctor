@@ -21,9 +21,8 @@ from drf_yasg import openapi
 
 schema_view = get_schema_view(
     openapi.Info(
-        title="家庭中医系统API",
+        title="汉典云健康系统API",
         default_version='v1',
-        # description="中医知识系统API",
     ),
     public=True,
     permission_classes=(permissions.AllowAny,),

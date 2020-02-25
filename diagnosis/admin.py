@@ -6,17 +6,17 @@ from diagnosis.models import (
 
 @admin.register(DiaDetail)
 class DiaDetailAdmin(admin.ModelAdmin):
-    list_display = ('id', )
+    list_display = ('id', 'patient_id', 'doctor_id', 'create_time')
 
 
 @admin.register(ImageDetail)
 class ImageDetailAdmin(admin.ModelAdmin):
-    list_display = ('id', )
+    list_display = ('id', 'patient_id', 'doctor_id', 'create_time')
 
 
 @admin.register(VideoDetail)
 class VideoDetailAdmin(admin.ModelAdmin):
-    list_display = ('id', )
+    list_display = ('id', 'patient_id', 'doctor_id', 'create_time')
 
 
 @admin.register(Recipe)

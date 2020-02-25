@@ -9,7 +9,7 @@ from celery_tasks.tasks import register_task
 
 
 class SmsSerializer(serializers.Serializer):
-    phone = serializers.CharField(min_length=11, max_length=11)
+    phone = serializers.CharField(min_length=11, max_length=11, label='手机号')
 
     def validate(self, attrs):
         phone = attrs.get('phone')
@@ -34,10 +34,10 @@ class SmsSerializer(serializers.Serializer):
         return attrs
 
 class BaseRegisterSerializer(serializers.Serializer):
-    phone = serializers.CharField(min_length=11, max_length=11)
-    password = serializers.CharField(min_length=6, max_length=18)
-    subpassword = serializers.CharField(min_length=6, max_length=18)
-    validate_code = serializers.CharField(min_length=6, max_length=6, error_messages={'blank': '验证码不可为空'})
+    phone = serializers.CharField(min_length=11, max_length=11, label='手机号')
+    password = serializers.CharField(min_length=6, max_length=18, label='密码')
+    subpassword = serializers.CharField(min_length=6, max_length=18, label='验证密码')
+    validate_code = serializers.CharField(min_length=6, max_length=6, error_messages={'blank': '验证码不可为空'}, label='短信验证码')
 
     def validate(self, attrs):
         phone = attrs.get('phone')
@@ -94,6 +94,17 @@ class AdminUserRegisterSerializer(BaseRegisterSerializer):
 
 
 class DoctorSerializer(serializers.ModelSerializer):
+    # user_picture_url = serializers.SerializerMethodField()
+
     class Meta:
         model = DoctorUser
-        fields = ('id', 'nick_name')
+        fields = ('id', 'nick_name', 'user_picture', 'referral')
+
+    # def get_user_picture_url(self, obj):
+    #     if not obj.user_picture:
+    #         return None
+
+    #     request = self.context.get('request')
+    #     photo_url = obj.user_picture
+    #     print(type(photo_url), photo_url)
+    #     return photo_url
