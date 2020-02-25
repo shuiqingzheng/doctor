@@ -8,8 +8,10 @@ urlpatterns = [
     # 患者
     path('patient/register/', PatientView.as_view({'post': 'create'}), name='patient-register'),
     # path('patient/login/', PatientView.as_view({'post': 'create'}), name='patient-login'),
+    # 复诊主页面
     path('patient/visit/main/', PatientView.as_view({'get': 'main'}), name='patient-visit-main'),
-    path('patient/visit/look/', PatientView.as_view({'get': 'find'}), name='patient-visit-look'),
+    # 寻找医生
+    path('patient/visit/look/', DoctorView.as_view({'get': 'list'}), name='patient-visit-look'),
 
     # 医生
     path('doctor/register/', DoctorView.as_view({'post': 'create'}), name='doctor-register'),

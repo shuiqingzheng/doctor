@@ -1,4 +1,4 @@
-from rest_framework import viewsets, generics, status
+from rest_framework import viewsets, generics, status, filters
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from django.db.models import Count, Min
@@ -12,6 +12,7 @@ from myuser.serializers import (
 from diagnosis.models import DiaDetail
 from aduser.models import AdminUser
 from django.contrib.auth.hashers import make_password
+from django_filters.rest_framework import DjangoFilterBackend
 from .utils import redis_conn
 from utils.sms import aliyun_send_sms_common_api
 # from oauth2_provider.contrib.rest_framework import TokenHasScope
@@ -119,10 +120,18 @@ class PatientView(BaseRegisterView, viewsets.ModelViewSet):
 class DoctorView(BaseRegisterView, viewsets.ModelViewSet):
     """
     医生:
-    create()->手机号注册;
+    create - 手机号注册;
     """
     permission_classes = [AllowAny, ]
     # requsired_scopes = ['basic']
-    queryset = DoctorUser.objects.all()
+    queryset = DoctorUser.objects.filter(is_success=True)
     serializer_class = DoctorSerializer
+    filter_backends = [filters.SearchFilter, ]
+    search_fields = ['hospital', 'department', 'owner__username', 'good_at']
     model = DoctorUser
+
+    def list(self, request, *args, **kwargs):
+        """
+        - 按要求查询医生（医院，科室，姓名，擅长）
+        """
+        return super().list(request, *args, **kwargs)

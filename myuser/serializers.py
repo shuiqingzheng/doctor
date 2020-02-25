@@ -95,10 +95,11 @@ class AdminUserRegisterSerializer(BaseRegisterSerializer):
 
 class DoctorSerializer(serializers.ModelSerializer):
     # user_picture_url = serializers.SerializerMethodField()
+    username = serializers.StringRelatedField(label='医生姓名', read_only=True, source='owner.username')
 
     class Meta:
         model = DoctorUser
-        fields = ('id', 'nick_name', 'user_picture', 'referral')
+        fields = ('id', 'nick_name', 'user_picture', 'referral', 'username')
 
     # def get_user_picture_url(self, obj):
     #     if not obj.user_picture:
