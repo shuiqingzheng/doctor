@@ -65,7 +65,7 @@ class MedicineOrder(Order):
         ('药品', '药品'),
         ('处方', '处方'),
     )
-    medicine_order_form = models.CharField(choices=FORM_CHOICES, blank=True, max_length=4, verbose_name='咨询类型', help_text='咨询类型')
+    medicine_order_form = models.CharField(choices=FORM_CHOICES, blank=True, max_length=4, verbose_name='类型', help_text='类型')
 
     medicine_name = models.CharField(max_length=200, blank=True, verbose_name='药品名称', help_text='药品名称')
 

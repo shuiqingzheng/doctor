@@ -1,5 +1,6 @@
 from django.urls import path
 from myuser.views import PatientView, DoctorView, SmsView
+from diagnosis.views import DiaDetailView, HistoryView
 
 
 urlpatterns = [
@@ -18,6 +19,8 @@ urlpatterns = [
     # log in
     # path('patient/login', PatientView.as_view({'post': 'login'}), name='patient-login'),
 
-    # list of users
-    path('doctor/', DoctorView.as_view({'get': 'list'}), name='doctor-list'),
+    # 医生复诊首页
+    path('doctor/visit/index/', DiaDetailView.as_view({'get': 'list'}), name='patient-visit-index'),
+    # 单人病例
+    path('doctor/visit/<int:pk>/history/', HistoryView.as_view({'get': 'user_history'}), name='patient-visit-history'),
 ]

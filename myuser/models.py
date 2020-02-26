@@ -50,6 +50,8 @@ class PatientUser(BaseUser):
     """
     owner = models.OneToOneField(AdminUser, on_delete=models.CASCADE, related_name='patient')
 
+    position = models.CharField(max_length=50, blank=True, null=True, verbose_name='职业', help_text='职业')
+
     image_count = models.IntegerField(blank=True, default=0, verbose_name='图文咨询次数', help_text='图文咨询次数')
 
     video_count = models.IntegerField(blank=True, default=0, verbose_name='视频咨询次数', help_text='视频咨询次数')

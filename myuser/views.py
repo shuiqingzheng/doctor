@@ -74,6 +74,12 @@ class PatientView(BaseRegisterView, viewsets.ModelViewSet):
     serializer_class = PatientSerializer
     model = PatientUser
 
+    def list(self, request, *args, **kwargs):
+        """
+        - 医生查询对应的相关病人
+        """
+        return super().list(request, *args, **kwargs)
+
     def main(self, request, *args, **kwargs):
         """
         - 复诊主页面
@@ -132,6 +138,6 @@ class DoctorView(BaseRegisterView, viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         """
-        - 按要求查询医生（医院，科室，姓名，擅长）
+        - 患者按要求查询医生（医院，科室，姓名，擅长）
         """
         return super().list(request, *args, **kwargs)

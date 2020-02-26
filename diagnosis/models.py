@@ -1,4 +1,5 @@
 from django.db import models
+from order.models import QuestionOrder, MedicineOrder
 from ckeditor.fields import RichTextField
 
 
@@ -48,7 +49,7 @@ class History(models.Model):
     # 病历内容(富文本)
     history_content = RichTextField(verbose_name='病历内容', help_text='病历内容')
 
-    recipe = models.OneToOneField(Recipe, null=True, blank=True, on_delete=models.CASCADE, related_name='history')
+    recipe = models.OneToOneField(Recipe, null=True, blank=True, on_delete=models.CASCADE, related_name='history', verbose_name='处方')
 
     def __str__(self):
         return '{}'.format(self.pk)
@@ -71,13 +72,15 @@ class Detail(models.Model):
 
     doctor_id = models.IntegerField(blank=True, verbose_name='医生ID', help_text='医生ID')
 
-    patient_main = RichTextField(verbose_name='患者主诉', help_text='患者主诉')
+    patient_main = models.TextField(verbose_name='患者主诉', help_text='患者主诉')
 
     image_one = models.ImageField(upload_to=custom_func_upload_to, blank=True, null=True, verbose_name='上传图片1', help_text='上传图片1')
 
     image_two = models.ImageField(upload_to=custom_func_upload_to, blank=True, null=True, verbose_name='上传图片2', help_text='上传图片2')
 
     image_three = models.ImageField(upload_to=custom_func_upload_to, blank=True, null=True, verbose_name='上传图片3', help_text='上传图片3')
+
+    order_time = models.DateTimeField(null=True, verbose_name='预约时间', help_text='预约时间')
 
     create_time = models.DateTimeField(auto_now_add=True)
 
@@ -89,6 +92,10 @@ class DiaDetail(Detail):
     """
     复诊详情
     """
+    order_question = models.OneToOneField(QuestionOrder, on_delete=models.CASCADE, related_name='diadetail', blank=True, null=True, verbose_name='咨询订单')
+
+    order_medicine = models.OneToOneField(MedicineOrder, on_delete=models.CASCADE, related_name='diadetail', blank=True, null=True, verbose_name='药品订单')
+
     recipe = models.OneToOneField(Recipe, null=True, blank=True, on_delete=models.CASCADE, related_name='diadetail')
 
     video_info = models.CharField(max_length=200, blank=True, null=True, verbose_name='复诊视频回放', help_text='复诊视频回放')
@@ -107,6 +114,10 @@ class ImageDetail(Detail):
     """
     图文详情
     """
+    order_question = models.OneToOneField(QuestionOrder, on_delete=models.CASCADE, related_name='imagedetail', blank=True, null=True, verbose_name='咨询订单')
+
+    order_medicine = models.OneToOneField(MedicineOrder, on_delete=models.CASCADE, related_name='imagedetail', blank=True, null=True, verbose_name='药品订单')
+
     response_answer = RichTextField(verbose_name='医生回复', help_text='医生回复')
 
     def __str__(self):
@@ -123,6 +134,10 @@ class VideoDetail(Detail):
     """
     视频详情
     """
+    order_question = models.OneToOneField(QuestionOrder, on_delete=models.CASCADE, related_name='videodetail', blank=True, null=True, verbose_name='咨询订单')
+
+    order_medicine = models.OneToOneField(MedicineOrder, on_delete=models.CASCADE, related_name='videodetail', blank=True, null=True, verbose_name='药品订单')
+
     video_info = models.CharField(max_length=100, blank=True, null=True, verbose_name='复诊视频回放', help_text='复诊视频回放')
 
     def __str__(self):

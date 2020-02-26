@@ -85,6 +85,27 @@ class PatientSerializer(serializers.ModelSerializer):
         read_only_fields = ['owner']
 
 
+class PatientBaseInfoSerializer(serializers.ModelSerializer):
+    username = serializers.StringRelatedField(label='患者真实姓名', read_only=True, source='owner.username')
+
+    sex = serializers.StringRelatedField(label='患者性别', read_only=True, source='owner.sex')
+
+    phone = serializers.StringRelatedField(label='患者手机号', read_only=True, source='owner.phone')
+
+    class Meta:
+        model = PatientUser
+        fields = ('id', 'username', 'phone', 'id_card', 'position', 'sex', 'birthday')
+
+
+class PatientVisitSerializer(serializers.ModelSerializer):
+    username = serializers.StringRelatedField(label='医生姓名', read_only=True, source='owner.username')
+
+    class Meta:
+        model = PatientUser
+        fields = ('id', 'username', 'patient_main', '')
+        read_only_fields = ['owner']
+
+
 class AdminUserRegisterSerializer(BaseRegisterSerializer):
     def create(self, validated_data):
         # 账户密码加密
