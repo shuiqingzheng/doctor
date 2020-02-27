@@ -2,20 +2,21 @@ import operator
 from rest_framework import filters
 from django.db import models
 from functools import reduce
-from rest_framework.compat import distinct
 from myuser.models import PatientUser
-from diagnosis.models import DiaDetail
 
 
 class SearchDiaDetail(filters.SearchFilter):
     def filter_queryset(self, request, queryset, view):
         search_terms = self.get_search_terms(request)
+        print(search_terms)
+
+        if not search_terms:
+            return queryset
 
         # 查询姓名 or 手机号
         orm_lookups = [
             'owner__username__icontains', 'owner__phone__icontains'
         ]
-        base = queryset
         conditions = []
         for search_term in search_terms:
             queries = [

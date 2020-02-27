@@ -1,6 +1,6 @@
 from django.urls import path
 from myuser.views import PatientView, DoctorView, SmsView
-from diagnosis.views import DiaDetailView, HistoryView
+from diagnosis.views import DiaDetailView, HistoryView, RecipeView
 
 
 urlpatterns = [
@@ -16,11 +16,12 @@ urlpatterns = [
 
     # 医生
     path('doctor/register/', DoctorView.as_view({'post': 'create'}), name='doctor-register'),
-    # log in
-    # path('patient/login', PatientView.as_view({'post': 'login'}), name='patient-login'),
-
     # 医生复诊首页
-    path('doctor/visit/index/', DiaDetailView.as_view({'get': 'list'}), name='patient-visit-index'),
-    # 单人病例
-    path('doctor/visit/<int:pk>/history/', HistoryView.as_view({'get': 'user_history'}), name='patient-visit-history'),
+    path('doctor/visit/index/', DiaDetailView.as_view({'get': 'list'}), name='doctor-visit-index'),
+    # 查看单人病例
+    path('doctor/visit/<int:pk>/history/', HistoryView.as_view({'get': 'user_history'}), name='doctor-visit-history'),
+    # 创建病历
+    path('doctor/visit/<int:pk>/history/create/', HistoryView.as_view({'post': 'create'}), name='doctor-visit-create-history'),
+    # 开处方
+    path('doctor/visit/<int:history_id>/recipe/', RecipeView.as_view({'post': 'create'}), name='doctor-create-recipe'),
 ]

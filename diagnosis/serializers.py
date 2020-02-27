@@ -1,7 +1,8 @@
 from rest_framework import serializers
-from diagnosis.models import DiaDetail, History
+from diagnosis.models import DiaDetail, History, Recipe, DiaMedicine
 from myuser.models import PatientUser
 from myuser.serializers import PatientBaseInfoSerializer
+from medicine.models import Medicine
 
 
 class DiaDetailSerializer(serializers.ModelSerializer):
@@ -27,16 +28,52 @@ class HistorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = History
-        fields = ('id', 'history_create_time', 'history_content', 'recipe')
+        fields = '__all__'
         depth = 1
+        extra_kwargs = {
+            'doctor_id': {'write_only': True},
+            'patient_id': {'write_only': True},
+        }
 
 
-class DS(serializers.Serializer):
-    base_info = PatientBaseInfoSerializer(label='患者基本信息')
-    results = HistorySerializer(label='病史列表', many=True)
+class CreateHistorySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = History
+        fields = ('id', 'history_content')
 
 
-class DemoSerializer(serializers.Serializer):
+class DiaMedicineSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DiaMedicine
+        fields = '__all__'
+        read_only_fields = ['owner', ]
+
+    def validate_medicine_name(self, value):
+        try:
+            Medicine.objects.get(officical_name=value)
+        except Medicine.DoesNotExist:
+            raise serializers.ValidationError('{}: 该药品不存在'.format(value))
+        return value
+
+
+class RecipeSerializer(serializers.ModelSerializer):
+    medicine_list = DiaMedicineSerializer(many=True)
+
+    class Meta:
+        model = Recipe
+        fields = ('total_price', 'recipe_result', 'price_type', 'medicine_list')
+
+    def create(self, validated_data):
+        medicine_list = validated_data.pop('medicine_list')
+        recipe = Recipe.objects.create(**validated_data)
+        dia_serializer = DiaMedicineSerializer(data=medicine_list, many=True)
+        dia_serializer.is_valid(raise_exception=True)
+        dia_serializer.save(owner=recipe)
+        return recipe
+
+
+class SwaggerHistorySerializer(serializers.Serializer):
     """
     - swagger接口显示的response
     """

@@ -36,6 +36,7 @@ class DiaMedicine(models.Model):
         verbose_name_plural = verbose_name
         ordering = ['-pk', ]
 
+
 class History(models.Model):
     """
     患者病历

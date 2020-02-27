@@ -152,7 +152,8 @@ OAUTH2_PROVIDER = {
     'AUTHORIZATION_CODE_EXPIRE_SECONDS': 60 * 5,
     'ACCESS_TOKEN_EXPIRE_SECONDS': 60 * 60 * 8,
     'SCOPES': {
-        'basic': '基础权限',
+        'doctor': '医生权限',
+        'patient': '患者权限',
         'extreme': '高级权限',
     }
 }
@@ -179,14 +180,15 @@ SWAGGER_SETTINGS = {
             'tokenUrl': '/o/token/',
             'flow': 'password',
             'scopes': {
-                'basic': '基础权限',
+                'doctor': '医生权限',
+                'patient': '患者权限',
                 'extreme': '高级权限',
             }
         }
     },
     'OAUTH2_CONFIG': {
-        'clientId': 'Z1whCL2EIUCp6LHqyHyg2JJTBOGF0ecTNOrQfcOd',
-        'clientSecret': '6cCCpZh0kyT0uRwx3pRldEfi85atOB1TQDAy8s305d702QXUVTv5xkFfr94FoMbKO0exICJ2LcDrVDPPm37zLXAsaWb7rljiDyTSUisUVmRjFn7iALcQLBT2rvkSI2Hr',
+        'clientId': 'huazai',
+        'clientSecret': 'huazai',
         'appName': 'Handian'
     },
 }

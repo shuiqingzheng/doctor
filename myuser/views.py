@@ -57,7 +57,7 @@ class BaseRegisterView(object):
                 self.model.objects.create(owner=user)
             except Exception as e:
                 transaction.savepoint_rollback(point)
-                raise
+                raise e
             transaction.savepoint_commit(point)
 
         return Response({'detail': '注册成功'}, status=status.HTTP_201_CREATED, )
