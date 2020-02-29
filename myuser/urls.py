@@ -1,5 +1,5 @@
 from django.urls import path
-from myuser.views import PatientView, DoctorView, SmsView
+from myuser.views import PatientView, DoctorView, SmsView, PatientInfoView
 from diagnosis.views import (
     DiaDetailDoctorView, HistoryView, RecipeView,
     DiaDetailPatientView,
@@ -10,7 +10,8 @@ urlpatterns = [
     # register
     path('sms/<str:phone>/', SmsView.as_view(), name='sms'),
     # 患者
-    path('patient/register/', PatientView.as_view({'post': 'create'}, name='patient-register'), name='patient-register'),
+    path('patient/register/', PatientView.as_view({'post': 'create'}), name='patient-register'),
+    path('patient/update/', PatientInfoView.as_view({'post': 'update'}), name='patient-info-update'),
     # path('patient/login/', PatientView.as_view({'post': 'create'}), name='patient-login'),
     # 复诊主页面
     path('patient/visit/main/', PatientView.as_view({'get': 'main'}), name='patient-visit-main'),

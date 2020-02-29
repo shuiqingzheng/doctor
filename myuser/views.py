@@ -1,17 +1,20 @@
 from rest_framework import viewsets, generics, status, filters
 from rest_framework.response import Response
+# from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import AllowAny
 from django.db.models import Count, Min
 from django.db import transaction
+from aduser.models import AdminUser
 from myuser.models import PatientUser, DoctorUser
 from myuser.serializers import (
     AdminUserRegisterSerializer, SmsSerializer,
-    PatientSerializer, DoctorSerializer,
+    PatientSerializer, DoctorSerializer, PatientInfoSerializer,
+    AdminUserSerializer,
 )
 from diagnosis.models import DiaDetail
 from myuser.utils import redis_conn
 from myuser.permissions import PatientBasePermission
-# from oauth2_provider.contrib.rest_framework import TokenHasScope
+from oauth2_provider.contrib.rest_framework import TokenHasScope
 
 
 class SmsView(generics.RetrieveAPIView):
@@ -114,9 +117,52 @@ class PatientView(BaseRegisterView, viewsets.ModelViewSet):
             response_context['after_user'] = None
         return Response(response_context)
 
-    def find(self, request, *args, **kwargs):
-        response_context = dict()
-        return Response(response_context)
+
+class PatientInfoView(viewsets.ModelViewSet):
+    permission_classes = [TokenHasScope, ]
+    required_scopes = ['patient']
+    queryset = PatientUser.objects.all()
+    serializer_class = PatientInfoSerializer
+    model = PatientUser
+    # parser_classes = [MultiPartParser]
+
+    def get_object(self):
+        user = self.request.auth.user
+        p = PatientUser.objects.get(owner=user)
+        return p
+
+    def update(self, request, *args, **kwargs):
+        """
+        - 患者补充或者修改自身信息
+        """
+        data = request.data
+        patient_data = dict()
+        admin_data = dict()
+        # 拆分数据
+        for key, value in data.items():
+            if hasattr(PatientUser, key):
+                patient_data[key] = value
+
+            if hasattr(AdminUser, key):
+                admin_data[key] = value
+
+        patient = self.get_object()
+        with transaction.atomic():
+            point = transaction.savepoint()
+
+            try:
+                patient_serializer = PatientSerializer(patient, data=patient_data, partial='partial')
+                patient_serializer.is_valid(raise_exception=True)
+                patient_serializer.save()
+                admin_serializer = AdminUserSerializer(patient.owner, data=admin_data, partial='partial')
+                admin_serializer.is_valid(raise_exception=True)
+                admin_serializer.save()
+            except Exception as e:
+                transaction.savepoint_rollback(point)
+                raise e
+            transaction.savepoint_commit(point)
+
+        return Response({'detail': '修改成功'})
 
 
 class DoctorView(BaseRegisterView, viewsets.ModelViewSet):

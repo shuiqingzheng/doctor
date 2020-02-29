@@ -86,6 +86,21 @@ class PatientSerializer(serializers.ModelSerializer):
         read_only_fields = ['owner']
 
 
+class PatientInfoSerializer(serializers.Serializer):
+    USER_SEX_CHOICES = (
+        ('男', '男'),
+        ('女', '女'),
+        ('未知', '未知')
+    )
+    sex = serializers.ChoiceField(choices=USER_SEX_CHOICES, label='性别')
+    age = serializers.IntegerField(label='年龄')
+    username = serializers.CharField(label='真实姓名')
+    id_card = serializers.CharField(label='身份证号码')
+    nick_name = serializers.CharField(label='昵称', required=False)
+    birthday = serializers.DateField(label='出生日期', required=False)
+    position = serializers.CharField(label='职业', required=False)
+
+
 class PatientBaseInfoSerializer(serializers.ModelSerializer):
     username = serializers.StringRelatedField(label='患者真实姓名', read_only=True, source='owner.username')
 
@@ -113,6 +128,12 @@ class AdminUserRegisterSerializer(BaseRegisterSerializer):
         password = validated_data.get('password')
         validated_data['password'] = make_password(password)
         return AdminUser.objects.create(**validated_data)
+
+
+class AdminUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AdminUser
+        fields = '__all__'
 
 
 class DoctorSerializer(serializers.ModelSerializer):
