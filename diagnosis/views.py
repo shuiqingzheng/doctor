@@ -1,5 +1,6 @@
 from rest_framework import viewsets, status
-from rest_framework.permissions import AllowAny
+# from rest_framework.permissions import AllowAny
+from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 from django_filters.utils import timezone
 # from django_filters.rest_framework import DjangoFilterBackend
@@ -7,28 +8,61 @@ from diagnosis.models import DiaDetail, History, Recipe
 from diagnosis.filters import SearchDiaDetail
 from diagnosis.serializers import (
     DiaDetailSerializer, HistorySerializer, SwaggerHistorySerializer,
-    RecipeSerializer, CreateHistorySerializer,
+    RecipeSerializer, CreateHistorySerializer, PatientDiaDetailSerializer,
+    SwaggerPDDSerializer,
 )
 from myuser.models import PatientUser
 from myuser.serializers import PatientBaseInfoSerializer
 from drf_yasg.utils import swagger_auto_schema
 from oauth2_provider.contrib.rest_framework import TokenHasScope
 from utils.swagger_response import ResponseSuccessSerializer
+from myuser.permissions import PatientBasePermission
 
 
-class DiaDetailView(viewsets.ModelViewSet):
-    permission_classes = [AllowAny, ]
-    # requsired_scopes = ['basic']
+class DiaDetailBaseView(viewsets.ModelViewSet):
     queryset = DiaDetail.objects.order_by('-order_time')
-    serializer_class = DiaDetailSerializer
     filter_backends = [SearchDiaDetail, ]
     model = DiaDetail
+
+
+class DiaDetailDoctorView(DiaDetailBaseView):
+    permission_classes = [TokenHasScope, ]
+    required_scopes = ['doctor']
+    serializer_class = DiaDetailSerializer
 
     def list(self, request, *args, **kwargs):
         """
         - 所有患者的复诊记录
         """
         return super().list(request, *args, **kwargs)
+
+
+class DiaDetailPatientView(DiaDetailBaseView):
+    permission_classes = [TokenHasScope, PatientBasePermission]
+    required_scopes = ['patient']
+    serializer_class = SwaggerPDDSerializer
+    parser_classes = [MultiPartParser]
+    lookup_field = 'doctor_id'
+
+    def create(self, request, doctor_id, *args, **kwargs):
+        """
+        - 复诊时患者创建病情描述
+        """
+        data = request.data
+        try:
+            patient = PatientUser.objects.get(owner=request.auth.user)
+        except PatientUser.DoesNotExist:
+            raise ValueError('不存在')
+
+        data.update({
+            'patient_id': patient.id,
+            'doctor_id': doctor_id
+        })
+        print(data)
+        s = PatientDiaDetailSerializer(data=data)
+        s.is_valid(raise_exception=True)
+        s.save()
+        return Response(s.data)
 
 
 class HistoryView(viewsets.ModelViewSet):

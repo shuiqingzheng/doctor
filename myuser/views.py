@@ -7,14 +7,10 @@ from myuser.models import PatientUser, DoctorUser
 from myuser.serializers import (
     AdminUserRegisterSerializer, SmsSerializer,
     PatientSerializer, DoctorSerializer,
-    AdminSerializer,
 )
 from diagnosis.models import DiaDetail
-from aduser.models import AdminUser
-from django.contrib.auth.hashers import make_password
-from django_filters.rest_framework import DjangoFilterBackend
-from .utils import redis_conn
-from utils.sms import aliyun_send_sms_common_api
+from myuser.utils import redis_conn
+from myuser.permissions import PatientBasePermission
 # from oauth2_provider.contrib.rest_framework import TokenHasScope
 
 
@@ -135,6 +131,16 @@ class DoctorView(BaseRegisterView, viewsets.ModelViewSet):
     filter_backends = [filters.SearchFilter, ]
     search_fields = ['hospital', 'department', 'owner__username', 'good_at']
     model = DoctorUser
+
+    def get_queryset(self):
+        current_url = self.request.path
+        if self.action == 'retrieve':
+            self.permission_classes = [PatientBasePermission, ]
+
+        if current_url.startswith('/patient/visit'):
+            return self.queryset.filter(bool_referral=True)
+
+        return self.queryset
 
     def list(self, request, *args, **kwargs):
         """

@@ -24,6 +24,26 @@ class DiaDetailSerializer(serializers.ModelSerializer):
             return patient.owner.username
 
 
+class Demo(serializers.Serializer):
+    o = serializers.ImageField(required=True)
+
+
+class PatientDiaDetailSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = DiaDetail
+        fields = ('id', 'patient_main', 'order_time', 'voice_info', 'image_one', 'image_two', 'image_three', 'patient_id', 'doctor_id')
+
+
+class SwaggerPDDSerializer(serializers.Serializer):
+    patient_main = serializers.CharField(label='患者主诉')
+    voice_info = serializers.CharField(label='录音', required=False)
+    order_time = serializers.DateTimeField(label='预约时间', required=False)
+    image_one = serializers.ImageField(label='上传图片1', required=False)
+    image_two = serializers.ImageField(label='上传图片2', required=False)
+    image_three = serializers.ImageField(label='上传图片3', required=False)
+
+
 class HistorySerializer(serializers.ModelSerializer):
 
     class Meta:

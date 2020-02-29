@@ -101,6 +101,8 @@ class DiaDetail(Detail):
 
     video_info = models.CharField(max_length=200, blank=True, null=True, verbose_name='复诊视频回放', help_text='复诊视频回放')
 
+    voice_info = models.CharField(max_length=200, blank=True, null=True, verbose_name='患者录音', help_text='患者录音')
+
     def __str__(self):
         return '{}'.format(self.pk)
 

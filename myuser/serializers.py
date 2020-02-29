@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from myuser.models import PatientUser, DoctorUser
 from aduser.models import AdminUser
-from django.contrib.auth.hashers import make_password, check_password
+from django.contrib.auth.hashers import make_password
 from utils.random_number import create_random_number
 from .utils import redis_conn
 
@@ -14,7 +14,7 @@ class SmsSerializer(serializers.Serializer):
     def validate(self, attrs):
         phone = attrs.get('phone')
         try:
-            patient = AdminUser.objects.get(phone=phone)
+            user = AdminUser.objects.get(phone=phone)
         except AdminUser.DoesNotExist:
             # 注册
             # 1. 发送验证码
@@ -30,8 +30,9 @@ class SmsSerializer(serializers.Serializer):
             if a.get('Code') != 'OK':
                 raise serializers.ValidationError('验证码发送失败，请重新尝试...')
         else:
-            raise serializers.ValidationError('用户已存在，请登录')
+            raise serializers.ValidationError('{}用户已存在，请登录'.format(user.phone))
         return attrs
+
 
 class BaseRegisterSerializer(serializers.Serializer):
     phone = serializers.CharField(min_length=11, max_length=11, label='手机号')
@@ -48,11 +49,11 @@ class BaseRegisterSerializer(serializers.Serializer):
         value = redis_conn.get(key_name)
 
         try:
-            patient = AdminUser.objects.get(phone=phone)
+            user = AdminUser.objects.get(phone=phone)
         except AdminUser.DoesNotExist:
             pass
         else:
-            raise serializers.ValidationError('用户已存在，请登录')
+            raise serializers.ValidationError('%s用户已存在，请登录' % user.phone)
 
         if not value:
             raise serializers.ValidationError('短信验证码失效， 请重新发送...')
@@ -120,7 +121,7 @@ class DoctorSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DoctorUser
-        fields = ('id', 'nick_name', 'user_picture', 'referral', 'username')
+        fields = ('id', 'nick_name', 'user_picture', 'referral', 'username', 'hospital', 'good_at')
 
     # def get_user_picture_url(self, obj):
     #     if not obj.user_picture:
