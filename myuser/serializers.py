@@ -136,6 +136,28 @@ class AdminUserSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class DoctorInfoSerializer(serializers.Serializer):
+    username = serializers.CharField(label='真实姓名')
+    hospital = serializers.CharField(label='医院')
+    DEPARTMENT_CHOICES = (
+        ('未知', '未知'),
+        ('中医', '中医'),
+        ('全科', '全科')
+    )
+    department = serializers.ChoiceField(choices=DEPARTMENT_CHOICES, label='科室')
+    good_point = serializers.CharField(label='职称')
+    good_at = serializers.CharField(label='擅长方向')
+    summary = serializers.CharField(label='主要成果', required=False)
+
+
+class DoctorUpdateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = DoctorUser
+        fields = '__all__'
+        read_only_fields = ['owner']
+
+
 class DoctorSerializer(serializers.ModelSerializer):
     # user_picture_url = serializers.SerializerMethodField()
     username = serializers.StringRelatedField(label='医生姓名', read_only=True, source='owner.username')

@@ -9,7 +9,8 @@ from myuser.models import PatientUser, DoctorUser
 from myuser.serializers import (
     AdminUserRegisterSerializer, SmsSerializer,
     PatientSerializer, DoctorSerializer, PatientInfoSerializer,
-    AdminUserSerializer,
+    AdminUserSerializer, DoctorInfoSerializer,
+    DoctorUpdateSerializer
 )
 from diagnosis.models import DiaDetail
 from myuser.utils import redis_conn
@@ -193,3 +194,49 @@ class DoctorView(BaseRegisterView, viewsets.ModelViewSet):
         - 患者按要求查询医生（医院，科室，姓名，擅长）
         """
         return super().list(request, *args, **kwargs)
+
+
+class DoctorInfoView(viewsets.ModelViewSet):
+    permission_classes = [TokenHasScope, ]
+    required_scopes = ['doctor']
+    queryset = DoctorUser.objects.all()
+    serializer_class = DoctorInfoSerializer
+    model = DoctorUser
+
+    def get_object(self):
+        user = self.request.auth.user
+        doctor = DoctorUser.objects.get(owner=user)
+        return doctor
+
+    def update(self, request, *args, **kwargs):
+        """
+        - 医生补充或者修改自身信息
+        """
+        data = request.data
+        doctor_data = dict()
+        admin_data = dict()
+        # 拆分数据
+        for key, value in data.items():
+            if hasattr(DoctorUser, key):
+                doctor_data[key] = value
+
+            if hasattr(AdminUser, key):
+                admin_data[key] = value
+
+        doctor = self.get_object()
+        with transaction.atomic():
+            point = transaction.savepoint()
+
+            try:
+                patient_serializer = DoctorUpdateSerializer(doctor, data=doctor_data, partial='partial')
+                patient_serializer.is_valid(raise_exception=True)
+                patient_serializer.save()
+                admin_serializer = AdminUserSerializer(doctor.owner, data=admin_data, partial='partial')
+                admin_serializer.is_valid(raise_exception=True)
+                admin_serializer.save()
+            except Exception as e:
+                transaction.savepoint_rollback(point)
+                raise e
+            transaction.savepoint_commit(point)
+
+        return Response({'detail': '修改成功'})
