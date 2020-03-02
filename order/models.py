@@ -1,5 +1,5 @@
 from django.db import models
-from myuser.models import PatientUser, DoctorUser
+# from myuser.models import PatientUser, DoctorUser
 
 
 class Order(models.Model):
@@ -28,6 +28,7 @@ class Order(models.Model):
     class Meta:
         abstract = True
 
+
 class QuestionOrder(Order):
     """
     咨询订单
@@ -55,6 +56,7 @@ class QuestionOrder(Order):
         verbose_name = '咨询订单'
         verbose_name_plural = verbose_name
         ordering = ['-pk', ]
+
 
 class MedicineOrder(Order):
     """

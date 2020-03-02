@@ -1,7 +1,8 @@
 from django.urls import path
 from myuser.views import (
     PatientView, DoctorView, SmsView,
-    PatientInfoView, DoctorInfoView
+    PatientInfoView, DoctorInfoView,
+    DoctorSetTimeView
 )
 from diagnosis.views import (
     DiaDetailDoctorView, HistoryView, RecipeView,
@@ -40,5 +41,8 @@ urlpatterns = [
     # 开处方
     path('doctor/visit/<int:history_id>/recipe/', RecipeView.as_view({'post': 'create'}), name='doctor-create-recipe'),
     # 药品列表
-    path('doctor/medicine/', MedicineDoctorView.as_view({'get': 'list'}), name='doctor-medicine')
+    path('doctor/medicine/', MedicineDoctorView.as_view({'get': 'list'}), name='doctor-medicine'),
+    # 预约时间
+    path('doctor/time/', DoctorSetTimeView.as_view({'get': 'list'}), name='doctor-settime'),
+    path('doctor/time/create/', DoctorSetTimeView.as_view({'post': 'create'}), name='doctor-settime'),
 ]

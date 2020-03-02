@@ -5,16 +5,16 @@ from rest_framework.permissions import AllowAny
 from django.db.models import Count, Min
 from django.db import transaction
 from aduser.models import AdminUser
-from myuser.models import PatientUser, DoctorUser
+from myuser.models import PatientUser, DoctorUser, DoctorSetTime
 from myuser.serializers import (
     AdminUserRegisterSerializer, SmsSerializer,
     PatientSerializer, DoctorSerializer, PatientInfoSerializer,
     AdminUserSerializer, DoctorInfoSerializer,
-    DoctorUpdateSerializer
+    DoctorUpdateSerializer, DoctorSetTimeSerializer
 )
 from diagnosis.models import DiaDetail
 from myuser.utils import redis_conn
-from myuser.permissions import PatientBasePermission
+from myuser.permissions import PatientBasePermission, DoctorBasePermission
 from oauth2_provider.contrib.rest_framework import TokenHasScope
 
 
@@ -240,3 +240,20 @@ class DoctorInfoView(viewsets.ModelViewSet):
             transaction.savepoint_commit(point)
 
         return Response({'detail': '修改成功'})
+
+
+class DoctorSetTimeView(viewsets.ModelViewSet):
+    permission_classes = [TokenHasScope, DoctorBasePermission]
+    required_scopes = ['doctor']
+    queryset = DoctorSetTime.objects.all()
+    serializer_class = DoctorSetTimeSerializer
+
+    def create(self, request, *args, **kwargs):
+        """
+        - 医生创建预约时间
+        """
+        doctor = DoctorUser.objects.get(owner=request.auth.user)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(owner=doctor)
+        return Response(serializer.data)

@@ -3,12 +3,14 @@ from diagnosis.models import DiaDetail, History, Recipe, DiaMedicine
 from myuser.models import PatientUser
 from myuser.serializers import PatientBaseInfoSerializer
 from medicine.models import Medicine
+from django.conf import settings
 
 
 class DiaDetailSerializer(serializers.ModelSerializer):
     business_state = serializers.StringRelatedField(label='状态', read_only=True, source='order_question__business_state')
 
     username = serializers.SerializerMethodField()
+    order_time = serializers.DateTimeField(format=settings.DATETIME_FORMAT)
 
     class Meta:
         model = DiaDetail
@@ -29,6 +31,7 @@ class Demo(serializers.Serializer):
 
 
 class PatientDiaDetailSerializer(serializers.ModelSerializer):
+    order_time = serializers.DateTimeField(label='预约时间', required=False, format=settings.DATETIME_FORMAT)
 
     class Meta:
         model = DiaDetail
@@ -38,7 +41,7 @@ class PatientDiaDetailSerializer(serializers.ModelSerializer):
 class SwaggerPDDSerializer(serializers.Serializer):
     patient_main = serializers.CharField(label='患者主诉')
     voice_info = serializers.CharField(label='录音', required=False)
-    order_time = serializers.DateTimeField(label='预约时间', required=False)
+    order_time = serializers.DateTimeField(label='预约时间', required=False, format=settings.DATETIME_FORMAT)
     image_one = serializers.ImageField(label='上传图片1', required=False)
     image_two = serializers.ImageField(label='上传图片2', required=False)
     image_three = serializers.ImageField(label='上传图片3', required=False)

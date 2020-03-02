@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -206,3 +208,15 @@ REDIS_PORT = 6379
 REDIS_DB = 2
 # 验证码过期时间
 REDIS_KEY_TTL = 5 * 60
+
+DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
+DATETIME_INPUT_FORMATS = ['%Y-%m-%d %H:%M:%S', ]
+
+sentry_sdk.init(
+    dsn="http://1360c6d6c5424614a199e0ea29cd0ead@39.99.225.130:9000/2",
+    integrations=[DjangoIntegration()],
+
+    # If you wish to associate users to errors (assuming you are using
+    # django.contrib.auth) you may enable sending PII data.
+    send_default_pii=True
+)

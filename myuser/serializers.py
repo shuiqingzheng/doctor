@@ -1,11 +1,12 @@
 from rest_framework import serializers
-from myuser.models import PatientUser, DoctorUser
+from myuser.models import PatientUser, DoctorUser, DoctorSetTime
 from aduser.models import AdminUser
 from django.contrib.auth.hashers import make_password
 from utils.random_number import create_random_number
 from .utils import redis_conn
 
 from celery_tasks.tasks import register_task
+from django.conf import settings
 
 
 class SmsSerializer(serializers.Serializer):
@@ -174,3 +175,13 @@ class DoctorSerializer(serializers.ModelSerializer):
     #     photo_url = obj.user_picture
     #     print(type(photo_url), photo_url)
     #     return photo_url
+
+
+class DoctorSetTimeSerializer(serializers.ModelSerializer):
+    start_time = serializers.DateTimeField(format=settings.DATETIME_FORMAT, label='开始时间')
+    end_time = serializers.DateTimeField(format=settings.DATETIME_FORMAT, label='结束时间')
+
+    class Meta:
+        model = DoctorSetTime
+        fields = '__all__'
+        read_only_fields = ['owner']
