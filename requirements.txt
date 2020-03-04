@@ -1,4 +1,6 @@
+aliyun-python-sdk-core==2.13.14
 aliyun-python-sdk-core-v3==2.13.11
+aliyun-python-sdk-ecs==4.18.3
 amqp==2.5.2
 billiard==3.6.2.0
 celery==4.4.0
@@ -37,6 +39,7 @@ redis==3.4.1
 requests==2.22.0
 ruamel.yaml==0.16.10
 ruamel.yaml.clib==0.2.0
+sentry-sdk==0.14.1
 six==1.14.0
 uritemplate==3.0.1
 urllib3==1.25.8
