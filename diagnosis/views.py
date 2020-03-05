@@ -4,6 +4,7 @@ from rest_framework import viewsets, status
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 from django_filters.utils import timezone
+from django.http import QueryDict
 # from django_filters.rest_framework import DjangoFilterBackend
 from diagnosis.models import DiaDetail, History, Recipe
 from diagnosis.filters import SearchDiaDetail
@@ -51,6 +52,10 @@ class DiaDetailPatientView(DiaDetailBaseView):
         - 复诊时患者创建病情描述
         """
         data = request.data
+
+        if isinstance(data, QueryDict):
+            data = data.dict()
+
         try:
             patient = PatientUser.objects.get(owner=request.auth.user)
         except PatientUser.DoesNotExist:
@@ -60,7 +65,6 @@ class DiaDetailPatientView(DiaDetailBaseView):
             'patient_id': patient.id,
             'doctor_id': doctor_id
         })
-        print(data)
         s = PatientDiaDetailSerializer(data=data)
         s.is_valid(raise_exception=True)
         s.save()
