@@ -26,6 +26,7 @@ class DiaMedicine(models.Model):
     owner = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name='diamedicine')
     medicine_name = models.CharField(max_length=200, blank=True, verbose_name='药品名称', help_text='药品名称')
     medicine_num = models.IntegerField(blank=True, default=0, verbose_name='药品单件数量', help_text='药品单件数量')
+    medicine_price = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True, verbose_name='药品单价', help_text='药品单价')
 
     def __str__(self):
         return '{}'.format(self.pk)
@@ -98,6 +99,8 @@ class DiaDetail(Detail):
     order_medicine = models.OneToOneField(MedicineOrder, on_delete=models.CASCADE, related_name='diadetail', blank=True, null=True, verbose_name='药品订单')
 
     recipe = models.OneToOneField(Recipe, null=True, blank=True, on_delete=models.CASCADE, related_name='diadetail')
+
+    is_video = models.BooleanField(default=False, verbose_name='是否视频复诊', help_text='是否视频复诊')
 
     video_info = models.CharField(max_length=200, blank=True, null=True, verbose_name='复诊视频回放', help_text='复诊视频回放')
 

@@ -13,7 +13,7 @@ class Order(models.Model):
 
     create_time = models.DateTimeField(auto_now_add=True)
 
-    order_num = models.CharField(max_length=100, blank=True, verbose_name='订单编号', help_text='订单编号')
+    order_num = models.CharField(unique=True, max_length=100, blank=True, verbose_name='订单编号', help_text='订单编号')
 
     order_price = models.DecimalField(max_digits=8, decimal_places=2, blank=True, verbose_name='订单价格', help_text='订单价格')
 
@@ -49,7 +49,7 @@ class QuestionOrder(Order):
     business_state = models.CharField(choices=BUSINESS_CHOICES, max_length=4, blank=True, verbose_name='业务状态', help_text='业务状态')
 
     def __str__(self):
-        return self.pk
+        return '{}'.format(self.pk)
 
     class Meta:
         db_table = 'questionorder'
@@ -72,7 +72,7 @@ class MedicineOrder(Order):
     medicine_name = models.CharField(max_length=200, blank=True, verbose_name='药品名称', help_text='药品名称')
 
     def __str__(self):
-        return self.pk
+        return '{}'.format(self.pk)
 
     class Meta:
         db_table = 'medicineorder'

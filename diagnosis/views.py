@@ -4,96 +4,155 @@ from rest_framework import viewsets, status
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 from django_filters.utils import timezone
-from django.http import QueryDict
+from django.http import QueryDict, Http404
+from django.db import transaction
 # from django_filters.rest_framework import DjangoFilterBackend
-from diagnosis.models import DiaDetail, History, Recipe
+from diagnosis.models import DiaDetail, History, Recipe, DiaMedicine
 from diagnosis.filters import SearchDiaDetail
 from diagnosis.serializers import (
     DiaDetailSerializer, HistorySerializer, SwaggerHistorySerializer,
     RecipeSerializer, CreateHistorySerializer, PatientDiaDetailSerializer,
-    SwaggerPDDSerializer,
+    SwaggerPDDSerializer, RecipeRetrieveSerializer, DiaMedicineSerializer
 )
+from medicine.permissions import TokenHasPermission
 from myuser.models import PatientUser, DoctorUser
-from myuser.permissions import DoctorVisitPermission, DoctorBasePermission
+from myuser.permissions import (
+    DoctorVisitPermission, DoctorBasePermission, DoctorCreatePermission
+)
 from myuser.serializers import PatientBaseInfoSerializer
 from drf_yasg.utils import swagger_auto_schema
 from oauth2_provider.contrib.rest_framework import TokenHasScope
 from utils.swagger_response import ResponseSuccessSerializer
+from utils.generate import create_order_number
 from myuser.permissions import PatientBasePermission
+from order.serializers import QuestionOrderSerializer
+from order.models import QuestionOrder
 
 
-class DiaDetailBaseView(viewsets.ModelViewSet):
+class DiaDetailView(viewsets.ModelViewSet):
+    """
+    - 获取复诊详情列表(可根据姓名、手机号查询)
+    """
+    permission_classes = [TokenHasPermission, ]
+    serializer_class = DiaDetailSerializer
     queryset = DiaDetail.objects.order_by('-order_time')
     filter_backends = [SearchDiaDetail, ]
     model = DiaDetail
 
+    def get_queryset(self):
+        token = self.request.auth
 
-class DiaDetailDoctorView(DiaDetailBaseView):
-    permission_classes = [TokenHasScope, DoctorBasePermission]
-    required_scopes = ['doctor']
-    serializer_class = DiaDetailSerializer
+        if token is not None:
+            if hasattr(token.user, 'patient'):
+                return self.queryset.filter(patient_id=token.user.patient.id)
 
-    def list(self, request, *args, **kwargs):
-        """
-        - 所有患者的复诊记录
-        """
-        return super().list(request, *args, **kwargs)
+        return self.queryset
+
+    def retrieve(self, request, *args, **kwargs):
+        user = self.request.auth.user
+        response_data = dict()
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+
+        serializer_patient = PatientBaseInfoSerializer(instance=user.patient)
+
+        response_data['base_info'] = serializer_patient.data
+        response_data['review_info'] = serializer.data
+
+        return Response(response_data)
 
 
-class DiaDetailPatientView(DiaDetailBaseView):
+class DiaDetailPatientView(viewsets.ModelViewSet):
     permission_classes = [TokenHasScope, PatientBasePermission]
     required_scopes = ['patient']
     serializer_class = SwaggerPDDSerializer
+    queryset = DiaDetail.objects.order_by('-order_time')
     parser_classes = [MultiPartParser]
+    filter_backends = [SearchDiaDetail, ]
     lookup_field = 'doctor_id'
+    model = DiaDetail
 
     def create(self, request, doctor_id, *args, **kwargs):
         """
-        - 复诊时患者创建病情描述
+        - 复诊患者创建病情描述(同时创建咨询订单)
         """
         data = request.data
 
         if isinstance(data, QueryDict):
             data = data.dict()
 
+        order_data = dict()
+        diadetail_data = dict()
+        for key, value in data.items():
+            if hasattr(QuestionOrder, key):
+                order_data[key] = value
+
+            if hasattr(DiaDetail, key):
+                diadetail_data[key] = value
+
         try:
             patient = PatientUser.objects.get(owner=request.auth.user)
         except PatientUser.DoesNotExist:
             raise ValueError('不存在')
 
-        data.update({
+        # 订单默认信息
+        order_default_info = {
+            'order_num': create_order_number(QuestionOrder),
+            'pay_state': '未支付',
+            'question_order_form': '复诊',
+            'business_state': '已提交',
             'patient_id': patient.id,
             'doctor_id': doctor_id
-        })
-        s = PatientDiaDetailSerializer(data=data)
-        s.is_valid(raise_exception=True)
-        s.save()
+        }
+        order_data.update(order_default_info)
+
+        with transaction.atomic():
+            point = transaction.savepoint()
+
+            try:
+                q = QuestionOrderSerializer(data=order_data)
+                q.is_valid(raise_exception=True)
+                q_obj = q.save()
+                diadetail_data.update({
+                    'patient_id': patient.id,
+                    'doctor_id': doctor_id
+                })
+                s = PatientDiaDetailSerializer(data=diadetail_data)
+                s.is_valid(raise_exception=True)
+                s.save(order_question=q_obj)
+            except Exception as e:
+                transaction.savepoint_rollback(point)
+                raise e
+            transaction.savepoint_commit(point)
+
         return Response(s.data)
 
 
 class HistoryView(viewsets.ModelViewSet):
-    permission_classes = [TokenHasScope, DoctorBasePermission, DoctorVisitPermission]
-    required_scopes = ['doctor']
+    permission_classes = [TokenHasPermission, DoctorCreatePermission,
+                          DoctorBasePermission, DoctorVisitPermission]
+
     queryset = History.objects.order_by('-history_create_time')
     serializer_class = CreateHistorySerializer
+    lookup_field = 'patient_id'
     model = History
 
-    def valid_patient_info(self, pk):
+    def valid_patient_info(self, patient_id):
         try:
-            patient = PatientUser.objects.get(id=pk)
+            patient = PatientUser.objects.get(id=patient_id)
         except PatientUser.DoesNotExist:
             patient = None
 
         return patient
 
-    def create(self, request, pk, *args, **kwargs):
+    def create(self, request, patient_id, *args, **kwargs):
         """
         - 医生为患者创建病历
         """
         doctor = DoctorUser.objects.get(owner=request.auth.user)
 
         # 患者基本信息
-        patient = self.valid_patient_info(pk)
+        patient = self.valid_patient_info(patient_id)
         if not patient:
             return Response({'detail': '用户不存在'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -109,16 +168,16 @@ class HistoryView(viewsets.ModelViewSet):
         return Response(s.data)
 
     @swagger_auto_schema(responses={'200': SwaggerHistorySerializer})
-    def user_history(self, request, pk, *args, **kwargs):
+    def user_history(self, request, patient_id, *args, **kwargs):
         """
         - 患者的病历（返回数据包含基本信息、病历列表）
         """
         # 患者基本信息
-        patient = self.valid_patient_info(pk)
+        patient = self.valid_patient_info(patient_id)
         serializer_patient = PatientBaseInfoSerializer(instance=patient)
 
         # 所有病例
-        all_history = self.model.objects.filter(patient_id=pk)
+        all_history = self.model.objects.filter(patient_id=patient_id)
         page = self.paginate_queryset(all_history)
         if page is not None:
             serializer = HistorySerializer(page, many=True)
@@ -135,12 +194,43 @@ class HistoryView(viewsets.ModelViewSet):
 
 
 class RecipeView(viewsets.ModelViewSet):
-    permission_classes = [TokenHasScope, DoctorBasePermission, DoctorVisitPermission]
-    required_scopes = ['doctor']
+    permission_classes = [TokenHasPermission, DoctorCreatePermission,
+                          DoctorBasePermission, DoctorVisitPermission]
     queryset = Recipe.objects.order_by('-pk')
-    serializer_class = RecipeSerializer
+    # serializer_class = RecipeSerializer
     lookup_field = 'history_id'
     model = Recipe
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return RecipeSerializer
+        return RecipeRetrieveSerializer
+        # return RecipeSerializer
+
+    def get_object(self):
+        id = self.kwargs.get(self.lookup_field)
+        try:
+            history = History.objects.get(pk=id)
+        except History.DoesNotExist:
+            raise Http404
+        else:
+            recipe = history.recipe
+
+            if not recipe:
+                raise Http404
+
+        self.check_object_permissions(self.request, recipe)
+        return recipe
+
+    def retrieve(self, request, *args, **kwargs):
+        response_data = dict()
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+
+        dia = DiaMedicineSerializer(DiaMedicine.objects.filter(owner=instance), many=True)
+        response_data['medicine_list'] = dia.data
+        response_data.update(serializer.data)
+        return Response(response_data)
 
     @swagger_auto_schema(responses={'200': ResponseSuccessSerializer})
     def create(self, request, history_id, *args, **kwargs):

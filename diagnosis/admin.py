@@ -31,4 +31,4 @@ class DiaMedicineAdmin(admin.ModelAdmin):
 
 @admin.register(History)
 class HistoryAdmin(admin.ModelAdmin):
-    list_display = ('id',)
+    list_display = ('id', 'recipe')

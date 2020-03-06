@@ -51,6 +51,9 @@ class DoctorVisitPermission(BasePermission):
     """
     def has_permission(self, request, view):
         user = request.auth.user
+        if view.action == 'user_history' and hasattr(user, 'patient'):
+            return True
+
         try:
             doctor = DoctorUser.objects.get(owner=user)
         except DoctorUser.DoesNotExist:
@@ -80,10 +83,12 @@ class DoctorBasePermission(BasePermission):
         user = auth.user
         info = list()
         error_msg = ''
+        if view.action == 'user_history' and hasattr(user, 'patient'):
+            return True
 
         try:
             not_adminuser = DoctorUser.objects.get(owner=user)
-        except PatientUser.DoesNotExist:
+        except DoctorUser.DoesNotExist:
             return False
 
         for key, value in doctor_write_fields.items():
@@ -111,3 +116,13 @@ class DoctorBasePermission(BasePermission):
 
     def has_object_permission(self, request, view, obj):
         return self._validate_auth(request, view)
+
+
+class DoctorCreatePermission(BasePermission):
+    def has_permission(self, request, view):
+        auth = request.auth
+        if view.action == 'create':
+            if hasattr(auth.user, 'patient'):
+                raise PermissionDenied(detail='患者不具备创建病历权限')
+
+        return True

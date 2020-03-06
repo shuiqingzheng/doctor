@@ -9,7 +9,7 @@ from myuser.models import PatientUser, DoctorUser, DoctorSetTime
 from myuser.serializers import (
     AdminUserRegisterSerializer, SmsSerializer,
     PatientSerializer, DoctorSerializer, PatientInfoSerializer,
-    AdminUserSerializer, DoctorInfoSerializer,
+    AdminUserSerializer, DoctorInfoSerializer, DoctorRetrieveSerializer,
     DoctorUpdateSerializer, DoctorSetTimeSerializer
 )
 from diagnosis.models import DiaDetail
@@ -202,6 +202,11 @@ class DoctorInfoView(viewsets.ModelViewSet):
     queryset = DoctorUser.objects.all()
     serializer_class = DoctorInfoSerializer
     model = DoctorUser
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return DoctorRetrieveSerializer
+        return self.serializer_class
 
     def get_object(self):
         user = self.request.auth.user

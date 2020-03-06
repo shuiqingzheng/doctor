@@ -159,6 +159,22 @@ class DoctorUpdateSerializer(serializers.ModelSerializer):
         read_only_fields = ['owner']
 
 
+class DoctorRetrieveSerializer(serializers.ModelSerializer):
+    username = serializers.StringRelatedField(label='医生姓名', read_only=True, source='owner.username')
+    email = serializers.StringRelatedField(label='医生邮箱', read_only=True, source='owner.email')
+    phone = serializers.StringRelatedField(label='医生电话', read_only=True, source='owner.phone')
+    sex = serializers.StringRelatedField(label='医生性别', read_only=True, source='owner.sex')
+    age = serializers.StringRelatedField(label='医生年龄', read_only=True, source='owner.age')
+
+    class Meta:
+        model = DoctorUser
+        fields = ('id', 'username', 'email', 'phone', 'sex', 'age', 'hospital',
+                  'score', 'good_at', 'good_point', 'department', 'summary',
+                  'image_question', 'bool_image_question', 'video_question',
+                  'bool_video_question', 'referral', 'bool_referral',
+                  'is_success', 'reason')
+
+
 class DoctorSerializer(serializers.ModelSerializer):
     # user_picture_url = serializers.SerializerMethodField()
     username = serializers.StringRelatedField(label='医生姓名', read_only=True, source='owner.username')

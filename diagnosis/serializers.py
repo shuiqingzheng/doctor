@@ -7,14 +7,21 @@ from django.conf import settings
 
 
 class DiaDetailSerializer(serializers.ModelSerializer):
-    business_state = serializers.StringRelatedField(label='状态', read_only=True, source='order_question__business_state')
+    # business_state = serializers.StringRelatedField(label='状态', read_only=True, source='order_question__business_state')
+    business_state = serializers.SerializerMethodField(label='状态')
 
     username = serializers.SerializerMethodField()
     order_time = serializers.DateTimeField(format=settings.DATETIME_FORMAT)
 
     class Meta:
         model = DiaDetail
-        fields = ('id', 'username', 'patient_main', 'order_time', 'business_state')
+        fields = ('id', 'username', 'patient_main', 'order_time', 'business_state', 'voice_info', 'image_one', 'image_two', 'image_three')
+
+    def get_business_state(self, obj):
+        o = obj.order_question
+        if not o:
+            return None
+        return o.business_state
 
     def get_username(self, obj):
         # 查询患者
@@ -41,10 +48,11 @@ class PatientDiaDetailSerializer(serializers.ModelSerializer):
 class SwaggerPDDSerializer(serializers.Serializer):
     patient_main = serializers.CharField(label='患者主诉')
     voice_info = serializers.CharField(label='录音', required=False)
-    order_time = serializers.DateTimeField(label='预约时间', required=False, format=settings.DATETIME_FORMAT)
+    order_time = serializers.DateTimeField(label='预约时间', format=settings.DATETIME_FORMAT)
     image_one = serializers.ImageField(label='上传图片1', required=False)
     image_two = serializers.ImageField(label='上传图片2', required=False)
     image_three = serializers.ImageField(label='上传图片3', required=False)
+    order_price = serializers.DecimalField(label='订单总价格', max_digits=8, decimal_places=2)
 
 
 class HistorySerializer(serializers.ModelSerializer):
@@ -78,6 +86,12 @@ class DiaMedicineSerializer(serializers.ModelSerializer):
         except Medicine.DoesNotExist:
             raise serializers.ValidationError('{}: 该药品不存在'.format(value))
         return value
+
+
+class RecipeRetrieveSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Recipe
+        fields = '__all__'
 
 
 class RecipeSerializer(serializers.ModelSerializer):
