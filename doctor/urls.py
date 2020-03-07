@@ -37,6 +37,6 @@ urlpatterns = [
     path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
 
     path('', include('myuser.urls'), name='myuser'),
-    path('', include('diagnosis.urls'), name='diagnosis'),
+    path('diag/', include('diagnosis.urls'), name='diagnosis'),
     path('medicine/', include('medicine.urls'), name='medicine'),
 ]
