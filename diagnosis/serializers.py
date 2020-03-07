@@ -15,7 +15,7 @@ class DiaDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DiaDetail
-        fields = ('id', 'username', 'patient_main', 'order_time', 'business_state', 'voice_info', 'image_one', 'image_two', 'image_three', 'room_number')
+        fields = ('id', 'username', 'patient_main', 'order_time', 'business_state', 'voice_info', 'image_one', 'image_two', 'image_three', 'room_number', 'is_video')
 
     def get_business_state(self, obj):
         o = obj.order_question
