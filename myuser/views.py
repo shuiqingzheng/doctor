@@ -150,6 +150,9 @@ class PatientInfoView(viewsets.ModelViewSet):
         admin_data = dict()
         # 拆分数据
         for key, value in data.items():
+            if not value:
+                continue
+
             if hasattr(PatientUser, key):
                 patient_data[key] = value
 
@@ -231,6 +234,9 @@ class DoctorInfoView(viewsets.ModelViewSet):
         admin_data = dict()
         # 拆分数据
         for key, value in data.items():
+            if not value:
+                continue
+
             if hasattr(DoctorUser, key):
                 doctor_data[key] = value
 

@@ -97,7 +97,6 @@ class DiaDetailPatientView(viewsets.ModelViewSet):
         """
         data = request.data
         doctor = self.valid_doctor_info(doctor_id)
-        print(data)
 
         if isinstance(data, QueryDict):
             data = data.dict()
@@ -105,6 +104,9 @@ class DiaDetailPatientView(viewsets.ModelViewSet):
         order_data = dict()
         diadetail_data = dict()
         for key, value in data.items():
+            if not value:
+                continue
+
             if hasattr(QuestionOrder, key):
                 order_data[key] = value
 
@@ -122,7 +124,7 @@ class DiaDetailPatientView(viewsets.ModelViewSet):
             'order_num': create_order_number(QuestionOrder),
             'pay_state': '未支付',
             'question_order_form': '复诊',
-            'business_state': '未确认',
+            'business_state': '已提交',
             'patient_id': patient.id,
             'doctor_id': doctor.id
         }
