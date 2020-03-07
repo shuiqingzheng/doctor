@@ -67,8 +67,8 @@ class Detail(models.Model):
     """
     诊断详情
     """
-    # def custom_func_upload_to(instance, filename):
-    #     return 'upload/review/{}'.format(filename)
+    def custom_func_upload_to(instance, filename):
+        return 'upload/review/{}'.format(filename)
 
     patient_id = models.IntegerField(blank=True, verbose_name='患者ID', help_text='患者ID')
     doctor_id = models.IntegerField(blank=True, verbose_name='医生ID', help_text='医生ID')
