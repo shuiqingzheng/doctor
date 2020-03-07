@@ -3,6 +3,22 @@ from django.contrib.auth.hashers import check_password
 from aduser.models import AdminUser
 
 
+class UploadImage(models.Model):
+    def custom_func_upload_to(instance, filename):
+        return 'upload/images/{}'.format(filename)
+
+    image = models.ImageField(upload_to=custom_func_upload_to, verbose_name='图片', help_text='图片')
+
+    def __str__(self):
+        return '{}'.format(self.pk)
+
+    class Meta:
+        db_table = 'uploadimage'
+        verbose_name = '上传图片'
+        verbose_name_plural = verbose_name
+        ordering = ('-pk', )
+
+
 class BaseUser(models.Model):
     def custom_func_upload_to(instance, filename):
         return 'upload/user_picture/{0}/{1}'.format(instance.id, filename)

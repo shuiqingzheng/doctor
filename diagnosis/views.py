@@ -12,10 +12,11 @@ from diagnosis.filters import SearchDiaDetail
 from diagnosis.serializers import (
     DiaDetailSerializer, HistorySerializer, SwaggerHistorySerializer,
     RecipeSerializer, CreateHistorySerializer, PatientDiaDetailSerializer,
-    SwaggerPDDSerializer, RecipeRetrieveSerializer, DiaMedicineSerializer
+    SwaggerPDDSerializer, RecipeRetrieveSerializer, DiaMedicineSerializer,
+    SwaggerUploadSerializer
 )
 from medicine.permissions import TokenHasPermission
-from myuser.models import PatientUser, DoctorUser
+from myuser.models import PatientUser, DoctorUser, UploadImage
 from myuser.permissions import (
     DoctorVisitPermission, DoctorBasePermission, DoctorCreatePermission
 )
@@ -49,6 +50,9 @@ class DiaDetailView(viewsets.ModelViewSet):
         return self.queryset
 
     def retrieve(self, request, *args, **kwargs):
+        """
+        - 获取复诊详情
+        """
         user = self.request.auth.user
         response_data = dict()
         instance = self.get_object()
@@ -62,21 +66,38 @@ class DiaDetailView(viewsets.ModelViewSet):
         return Response(response_data)
 
 
+class UploadImageView(viewsets.ModelViewSet):
+    permission_classes = [TokenHasScope, PatientBasePermission]
+    required_scopes = ['patient']
+    serializer_class = SwaggerUploadSerializer
+    queryset = UploadImage.objects.order_by('-pk')
+    parser_classes = [MultiPartParser]
+
+
 class DiaDetailPatientView(viewsets.ModelViewSet):
     permission_classes = [TokenHasScope, PatientBasePermission]
     required_scopes = ['patient']
     serializer_class = SwaggerPDDSerializer
     queryset = DiaDetail.objects.order_by('-order_time')
-    parser_classes = [MultiPartParser]
     filter_backends = [SearchDiaDetail, ]
     lookup_field = 'doctor_id'
     model = DiaDetail
+
+    def valid_doctor_info(self, pk):
+        try:
+            doctor = DoctorUser.objects.get(id=pk)
+        except DoctorUser.DoesNotExist:
+            raise Http404
+
+        return doctor
 
     def create(self, request, doctor_id, *args, **kwargs):
         """
         - 复诊患者创建病情描述(同时创建咨询订单)
         """
         data = request.data
+        doctor = self.valid_doctor_info(doctor_id)
+        print(data)
 
         if isinstance(data, QueryDict):
             data = data.dict()
@@ -95,14 +116,15 @@ class DiaDetailPatientView(viewsets.ModelViewSet):
         except PatientUser.DoesNotExist:
             raise ValueError('不存在')
 
+        # TODO-支付接口更改状态 business_state
         # 订单默认信息
         order_default_info = {
             'order_num': create_order_number(QuestionOrder),
             'pay_state': '未支付',
             'question_order_form': '复诊',
-            'business_state': '已提交',
+            'business_state': '未确认',
             'patient_id': patient.id,
-            'doctor_id': doctor_id
+            'doctor_id': doctor.id
         }
         order_data.update(order_default_info)
 
@@ -115,7 +137,8 @@ class DiaDetailPatientView(viewsets.ModelViewSet):
                 q_obj = q.save()
                 diadetail_data.update({
                     'patient_id': patient.id,
-                    'doctor_id': doctor_id
+                    'doctor_id': doctor.id,
+                    'room_number': int('{}{}{}'.format(patient.id, doctor.id, q_obj.id))
                 })
                 s = PatientDiaDetailSerializer(data=diadetail_data)
                 s.is_valid(raise_exception=True)

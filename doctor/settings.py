@@ -69,7 +69,7 @@ ROOT_URLCONF = 'doctor.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -144,7 +144,9 @@ AUTH_USER_MODEL = 'aduser.AdminUser'
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'collect_static')
 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'upload/')
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 MEDIA_URL = '/media/'
 
@@ -200,11 +202,11 @@ CELERY_TASK_SERIALIZER = 'pickle'
 CELERY_RESULT_SERIALIZER = 'pickle'
 CELERY_ACCEPT_CONTENT = ['pickle']
 
-CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
-CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/1'
+CELERY_BROKER_URL = 'redis://127.0.0.1:6378/0'
+CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6378/1'
 
 REDIS_HOST = '127.0.0.1'
-REDIS_PORT = 6379
+REDIS_PORT = 6378
 REDIS_DB = 2
 # 验证码过期时间
 REDIS_KEY_TTL = 5 * 60

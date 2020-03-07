@@ -67,20 +67,20 @@ class Detail(models.Model):
     """
     诊断详情
     """
-    def custom_func_upload_to(instance, filename):
-        return 'upload/user_picture/{0}/{1}'.format(instance.id, filename)
+    # def custom_func_upload_to(instance, filename):
+    #     return 'upload/review/{}'.format(filename)
 
     patient_id = models.IntegerField(blank=True, verbose_name='患者ID', help_text='患者ID')
-
     doctor_id = models.IntegerField(blank=True, verbose_name='医生ID', help_text='医生ID')
-
     patient_main = models.TextField(verbose_name='患者主诉', help_text='患者主诉')
+    image_one = models.URLField(blank=True, null=True, verbose_name='上传图片url-1', help_text='上传图片url-1')
+    image_two = models.URLField(blank=True, null=True, verbose_name='上传图片url-2', help_text='上传图片url-2')
+    image_three = models.URLField(blank=True, null=True, verbose_name='上传图片url-3', help_text='上传图片url-3')
+    # image_one = models.ImageField(upload_to=custom_func_upload_to, blank=True, null=True, verbose_name='上传图片1', help_text='上传图片1')
 
-    image_one = models.ImageField(upload_to=custom_func_upload_to, blank=True, null=True, verbose_name='上传图片1', help_text='上传图片1')
+    # image_two = models.ImageField(upload_to=custom_func_upload_to, blank=True, null=True, verbose_name='上传图片2', help_text='上传图片2')
 
-    image_two = models.ImageField(upload_to=custom_func_upload_to, blank=True, null=True, verbose_name='上传图片2', help_text='上传图片2')
-
-    image_three = models.ImageField(upload_to=custom_func_upload_to, blank=True, null=True, verbose_name='上传图片3', help_text='上传图片3')
+    # image_three = models.ImageField(upload_to=custom_func_upload_to, blank=True, null=True, verbose_name='上传图片3', help_text='上传图片3')
 
     order_time = models.DateTimeField(null=True, verbose_name='预约时间', help_text='预约时间')
 
@@ -105,6 +105,8 @@ class DiaDetail(Detail):
     video_info = models.CharField(max_length=200, blank=True, null=True, verbose_name='复诊视频回放', help_text='复诊视频回放')
 
     voice_info = models.CharField(max_length=200, blank=True, null=True, verbose_name='患者录音', help_text='患者录音')
+
+    room_number = models.IntegerField(blank=True, null=True, verbose_name='视频房间号', help_text='视频房间号')
 
     def __str__(self):
         return '{}'.format(self.pk)

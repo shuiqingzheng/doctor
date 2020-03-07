@@ -175,6 +175,19 @@ class DoctorRetrieveSerializer(serializers.ModelSerializer):
                   'is_success', 'reason')
 
 
+class PatientRetrieveSerializer(serializers.ModelSerializer):
+    username = serializers.StringRelatedField(label='患者姓名', read_only=True, source='owner.username')
+    email = serializers.StringRelatedField(label='患者邮箱', read_only=True, source='owner.email')
+    phone = serializers.StringRelatedField(label='患者电话', read_only=True, source='owner.phone')
+    sex = serializers.StringRelatedField(label='患者性别', read_only=True, source='owner.sex')
+    age = serializers.StringRelatedField(label='患者年龄', read_only=True, source='owner.age')
+
+    class Meta:
+        model = PatientUser
+        fields = ('id', 'username', 'email', 'phone', 'sex', 'age', 'position',
+                  'image_count', 'video_count', 'referral_count', 'patient_state')
+
+
 class DoctorSerializer(serializers.ModelSerializer):
     # user_picture_url = serializers.SerializerMethodField()
     username = serializers.StringRelatedField(label='医生姓名', read_only=True, source='owner.username')

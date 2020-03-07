@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from diagnosis.models import DiaDetail, History, Recipe, DiaMedicine
-from myuser.models import PatientUser
+from myuser.models import PatientUser, UploadImage
 from myuser.serializers import PatientBaseInfoSerializer
 from medicine.models import Medicine
 from django.conf import settings
@@ -33,26 +33,29 @@ class DiaDetailSerializer(serializers.ModelSerializer):
             return patient.owner.username
 
 
-class Demo(serializers.Serializer):
-    o = serializers.ImageField(required=True)
-
-
 class PatientDiaDetailSerializer(serializers.ModelSerializer):
     order_time = serializers.DateTimeField(label='预约时间', required=False, format=settings.DATETIME_FORMAT)
 
     class Meta:
         model = DiaDetail
-        fields = ('id', 'patient_main', 'order_time', 'voice_info', 'image_one', 'image_two', 'image_three', 'patient_id', 'doctor_id')
+        fields = ('id', 'patient_main', 'order_time', 'voice_info', 'image_one', 'image_two', 'image_three', 'patient_id', 'doctor_id', 'is_video', 'room_number')
 
 
 class SwaggerPDDSerializer(serializers.Serializer):
+    is_video = serializers.BooleanField(label='是否视频复诊')
     patient_main = serializers.CharField(label='患者主诉')
     voice_info = serializers.CharField(label='录音', required=False)
     order_time = serializers.DateTimeField(label='预约时间', format=settings.DATETIME_FORMAT)
-    image_one = serializers.ImageField(label='上传图片1', required=False)
-    image_two = serializers.ImageField(label='上传图片2', required=False)
-    image_three = serializers.ImageField(label='上传图片3', required=False)
     order_price = serializers.DecimalField(label='订单总价格', max_digits=8, decimal_places=2)
+    image_one = serializers.URLField(label='上传图片1', required=False)
+    image_two = serializers.URLField(label='上传图片2', required=False)
+    image_three = serializers.URLField(label='上传图片3', required=False)
+
+
+class SwaggerUploadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UploadImage
+        fields = '__all__'
 
 
 class HistorySerializer(serializers.ModelSerializer):

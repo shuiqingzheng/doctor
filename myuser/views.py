@@ -1,3 +1,4 @@
+from django.shortcuts import render
 from rest_framework import viewsets, generics, status, filters
 from rest_framework.response import Response
 # from rest_framework.parsers import MultiPartParser
@@ -10,12 +11,16 @@ from myuser.serializers import (
     AdminUserRegisterSerializer, SmsSerializer,
     PatientSerializer, DoctorSerializer, PatientInfoSerializer,
     AdminUserSerializer, DoctorInfoSerializer, DoctorRetrieveSerializer,
-    DoctorUpdateSerializer, DoctorSetTimeSerializer
+    DoctorUpdateSerializer, DoctorSetTimeSerializer, PatientRetrieveSerializer
 )
 from diagnosis.models import DiaDetail
 from myuser.utils import redis_conn
 from myuser.permissions import PatientBasePermission, DoctorBasePermission
 from oauth2_provider.contrib.rest_framework import TokenHasScope
+
+
+def index(request, *args, **kwargs):
+    return render(request, 'index.html')
 
 
 class SmsView(generics.RetrieveAPIView):
@@ -125,7 +130,11 @@ class PatientInfoView(viewsets.ModelViewSet):
     queryset = PatientUser.objects.all()
     serializer_class = PatientInfoSerializer
     model = PatientUser
-    # parser_classes = [MultiPartParser]
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return PatientRetrieveSerializer
+        return self.serializer_class
 
     def get_object(self):
         user = self.request.auth.user
@@ -168,8 +177,8 @@ class PatientInfoView(viewsets.ModelViewSet):
 
 class DoctorView(BaseRegisterView, viewsets.ModelViewSet):
     """
-    医生:
-    create - 手机号注册;
+    retrieve:
+        查询开通复诊的医生
     """
     permission_classes = [AllowAny, ]
     # requsired_scopes = ['basic']
@@ -184,14 +193,14 @@ class DoctorView(BaseRegisterView, viewsets.ModelViewSet):
         if self.action == 'retrieve':
             self.permission_classes = [PatientBasePermission, ]
 
-        if current_url.startswith('/patient/visit'):
+        if 'review' in current_url:
             return self.queryset.filter(bool_referral=True)
 
         return self.queryset
 
     def list(self, request, *args, **kwargs):
         """
-        - 患者按要求查询医生（医院，科室，姓名，擅长）
+        - 按要求查询'复诊'医生（医院，科室，姓名，擅长）
         """
         return super().list(request, *args, **kwargs)
 

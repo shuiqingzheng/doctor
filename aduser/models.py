@@ -4,6 +4,7 @@ from django.contrib.auth.models import PermissionsMixin
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 # from oauth2_provider.backends import OAuth2Backend
 
+
 class AdUserManager(BaseUserManager):
     use_in_migrations = True
 
