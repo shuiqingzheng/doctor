@@ -124,7 +124,7 @@ class DiaDetailPatientView(viewsets.ModelViewSet):
             'order_num': create_order_number(QuestionOrder),
             'pay_state': '未支付',
             'question_order_form': '复诊',
-            'business_state': '已提交',
+            'business_state': '已支付',
             'patient_id': patient.id,
             'doctor_id': doctor.id
         }

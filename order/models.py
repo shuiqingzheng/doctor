@@ -42,9 +42,8 @@ class QuestionOrder(Order):
     question_order_form = models.CharField(choices=FORM_CHOICES, blank=True, max_length=4, verbose_name='咨询类型', help_text='咨询类型')
 
     BUSINESS_CHOICES = (
-        ('未确认', '未确认'),
-        ('已确认', '已确认'),
-        ('已提交', '已提交'),
+        ('未支付', '未支付'),
+        ('已支付', '已支付'),
         ('已完成', '已完成')
     )
     business_state = models.CharField(choices=BUSINESS_CHOICES, max_length=4, blank=True, verbose_name='业务状态', help_text='业务状态')
