@@ -185,7 +185,8 @@ class PatientRetrieveSerializer(serializers.ModelSerializer):
     class Meta:
         model = PatientUser
         fields = ('id', 'username', 'email', 'phone', 'sex', 'age', 'position',
-                  'image_count', 'video_count', 'referral_count', 'patient_state')
+                  'image_count', 'video_count', 'referral_count', 'patient_state',
+                  'nick_name', 'id_card', 'birthday')
 
 
 class DoctorSerializer(serializers.ModelSerializer):

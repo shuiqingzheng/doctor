@@ -171,7 +171,7 @@ REST_FRAMEWORK = {
         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
     ),
     'DEFAULT_PAGINATION_CLASS': 'doctor.pagination.CustomPagination',
-    'PAGE_SIZE': 5,
+    'PAGE_SIZE': 10,
     'NON_FIELD_ERRORS_KEY': 'detail',
 }
 
