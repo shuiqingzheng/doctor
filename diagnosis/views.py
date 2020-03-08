@@ -36,7 +36,7 @@ class DiaDetailView(viewsets.ModelViewSet):
     """
     permission_classes = [TokenHasPermission, ]
     serializer_class = DiaDetailSerializer
-    queryset = DiaDetail.objects.order_by('-order_time')
+    queryset = DiaDetail.objects.order_by('-create_time')
     filter_backends = [SearchDiaDetail, ]
     model = DiaDetail
 
@@ -78,7 +78,7 @@ class DiaDetailPatientView(viewsets.ModelViewSet):
     permission_classes = [TokenHasScope, PatientBasePermission]
     required_scopes = ['patient']
     serializer_class = SwaggerPDDSerializer
-    queryset = DiaDetail.objects.order_by('-order_time')
+    queryset = DiaDetail.objects.order_by('-create_time')
     filter_backends = [SearchDiaDetail, ]
     lookup_field = 'doctor_id'
     model = DiaDetail
