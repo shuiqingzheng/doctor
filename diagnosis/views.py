@@ -56,10 +56,17 @@ class DiaDetailView(viewsets.ModelViewSet):
         user = self.request.auth.user
         response_data = dict()
         instance = self.get_object()
+
+        if hasattr(user, 'patient'):
+            patient = user.patient
+        else:
+            try:
+                patient = PatientUser.objects.get(id=instance.patient_id)
+            except PatientUser.DoesNotExist:
+                raise ValueError('复诊详情的患者账户不存在')
+
         serializer = self.get_serializer(instance)
-
-        serializer_patient = PatientBaseInfoSerializer(instance=user.patient)
-
+        serializer_patient = PatientBaseInfoSerializer(instance=patient)
         response_data['base_info'] = serializer_patient.data
         response_data['review_info'] = serializer.data
 
