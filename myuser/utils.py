@@ -1,8 +1,6 @@
 import redis
-import re
 from django.conf import settings
 from django.contrib.auth.backends import ModelBackend
-from myuser.models import PatientUser, DoctorUser
 from aduser.models import AdminUser
 
 redis_conn = redis.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=settings.REDIS_DB, decode_responses=True)

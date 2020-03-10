@@ -64,7 +64,7 @@ class PatientUser(BaseUser):
     患者:
     姓名-威信昵称-身份证号-出生年月-图文咨询次数-视频咨询次数-复诊次数
     """
-    owner = models.OneToOneField(AdminUser, on_delete=models.CASCADE, related_name='patient')
+    owner = models.OneToOneField(AdminUser, on_delete=models.CASCADE, related_name='patient', verbose_name='用户')
 
     position = models.CharField(max_length=50, blank=True, null=True, verbose_name='职业', help_text='职业')
 
@@ -96,7 +96,7 @@ class DoctorUser(BaseUser):
     姓名-手机-医院-好评次数-擅长诊疗方向-执业点-一句话概括-图文咨询（是否开启）-视频咨询（是否开启）-复诊收费（是否开启）
     -科室
     """
-    owner = models.OneToOneField(AdminUser, on_delete=models.CASCADE, related_name='doctor')
+    owner = models.OneToOneField(AdminUser, on_delete=models.CASCADE, related_name='doctor', verbose_name='用户')
 
     hospital = models.CharField(max_length=120, blank=True, null=True, verbose_name='医院', help_text='医院')
 
@@ -144,7 +144,7 @@ class DoctorUser(BaseUser):
 
 
 class DoctorSetTime(models.Model):
-    owner = models.ForeignKey(DoctorUser, on_delete=models.CASCADE, related_name='settime')
+    owner = models.ForeignKey(DoctorUser, on_delete=models.CASCADE, related_name='settime', verbose_name='医生ID')
 
     start_time = models.DateTimeField(verbose_name='起始时间', help_text='起始时间')
 

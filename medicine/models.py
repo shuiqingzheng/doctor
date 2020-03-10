@@ -13,7 +13,7 @@ class MedicineType(models.Model):
 
     type_name = models.CharField(max_length=200, unique=True, blank=True, verbose_name='药品类别名称', help_text='药品类别名称')
 
-    father_id = models.IntegerField(blank=True, verbose_name='父类ID/名称', help_text='父类ID/名称')
+    father_id = models.IntegerField(null=True, blank=True, verbose_name='父类ID/名称', help_text='父类ID/名称')
 
     def __str__(self):
         return self.type_name

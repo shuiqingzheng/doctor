@@ -70,7 +70,7 @@ class MyUserAdmin(UserAdmin):
             'fields': ('email', 'username', 'phone', 'password1', 'password2')}
          ),
     )
-    search_fields = ('email', 'username', 'phone')
+    search_fields = ('email', 'username', 'phone', 'id')
     ordering = ('pk', 'phone',)
     filter_horizontal = ('groups', 'user_permissions',)
 
