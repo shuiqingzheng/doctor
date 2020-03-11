@@ -34,15 +34,15 @@ class MedicineTypeView(viewsets.ModelViewSet):
     permission_classes = [TokenHasPermission]
     serializer_class = MedicineTypeSerializer
     queryset = MedicineType.objects.all()
+    next_type_name = 'next_type'
+    allowd_level = ['one', 'two', 'three', 'all']
 
     def medicineType(self, request, type_level, *args, **kwargs):
         """
         - 返回药品类型列表
         """
-        allowd_level = ['one', 'two', 'three']
-
-        if type_level not in allowd_level:
-            return Response({'detail': '查询类别请选择{}、{}或者{}'.format(*allowd_level)}, status=status.HTTP_404_NOT_FOUND)
+        if type_level not in self.allowd_level:
+            return Response({'detail': '查询类别请选择{}、{}、{}或{}'.format(*self.allowd_level)}, status=status.HTTP_404_NOT_FOUND)
 
         response_data = None
         one_level = self.queryset.filter(father_id=None)
@@ -51,14 +51,37 @@ class MedicineTypeView(viewsets.ModelViewSet):
         two_level_id_list = [obj.id for obj in two_level]
         three_level = self.queryset.filter(father_id__in=two_level_id_list)
 
-        if type_level == allowd_level[0]:
+        if type_level == self.allowd_level[0]:
             one_serializer = self.get_serializer(one_level, many=True)
             response_data = one_serializer.data
-        elif type_level == allowd_level[1]:
+        elif type_level == self.allowd_level[1]:
             two_serializer = self.get_serializer(two_level, many=True)
             response_data = two_serializer.data
-        else:
+        elif type_level == self.allowd_level[2]:
             three_serializer = self.get_serializer(three_level, many=True)
             response_data = three_serializer.data
+        else:
+            response_data = list()
+            for one in one_level:
+                one_serializer = self.get_serializer(one)
+                one_data = one_serializer.data
+                one_next_type = list()
+
+                for two in two_level.filter(father_id=one.id):
+                    two_serializer = self.get_serializer(two)
+                    two_data = two_serializer.data
+
+                    three_objs = three_level.filter(father_id=two.id)
+                    three_serializers = self.get_serializer(three_objs, many=True)
+
+                    two_data.update({
+                        '{}'.format(self.next_type_name): three_serializers.data
+                    })
+                    one_next_type.append(two_data)
+
+                one_data.update({
+                    '{}'.format(self.next_type_name): one_next_type
+                })
+                response_data.append(one_data)
 
         return Response(response_data)
