@@ -1,28 +1,40 @@
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, status
 from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
 # from rest_framework.permissions import AllowAny
-from medicine.models import Medicine, MedicineType
+from medicine.models import Medicine, MedicineType, MedicineStock
 from medicine.serializers import (
-    Medicineserializer, MedicineTypeSerializer
+    Medicineserializer, MedicineTypeSerializer, MedicineStockSerializer
 )
 from medicine.permissions import TokenHasPermission
-# from oauth2_provider.contrib.rest_framework import TokenHasScope
+from oauth2_provider.contrib.rest_framework import TokenHasScope
+
+
+class MedicineStockView(viewsets.ModelViewSet):
+    permission_classes = [TokenHasScope]
+    required_scopes = ['doctor']
+    queryset = MedicineStock.objects.all()
+    serializer_class = MedicineStockSerializer
 
 
 class MedicineView(viewsets.ModelViewSet):
     permission_classes = [TokenHasPermission]
     # required_any_scopes = ['doctor', 'patient']
     serializer_class = Medicineserializer
-    filter_backends = [SearchFilter]
+    filter_backends = [SearchFilter, DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend]
     search_fields = ['type_one', 'type_two', 'type_three', 'good_for',
                      'officical_name', 'price', 'product_source', ]
+    filterset_fields = ('type_one', 'type_two', 'type_three')
 
     def get_queryset(self):
         auth = self.request.auth
-        # 患者：返回已上架商品
-        if hasattr(auth.user, 'patient'):
-            return Medicine.objects.filter(product_state=True)
+        if hasattr(auth, 'user'):
+            user = auth.user
+            # 患者：返回已上架商品
+            if hasattr(user, 'patient'):
+                return Medicine.objects.filter(product_state=True)
 
         return Medicine.objects.order_by('-pk')
 

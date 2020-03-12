@@ -48,7 +48,7 @@ class Medicine(models.Model):
 
     good_for = models.CharField(max_length=200, blank=True, verbose_name='适应症', help_text='适应症')
 
-    detail = RichTextField()
+    detail = RichTextField(verbose_name='说明书')
 
     product_images = models.CharField(max_length=200, blank=True, verbose_name='药品图片', help_text='药品图片')
 
@@ -65,3 +65,18 @@ class Medicine(models.Model):
         verbose_name = '药品'
         verbose_name_plural = verbose_name
         ordering = ['-pk', ]
+
+
+class MedicineStock(models.Model):
+    medicine_name = models.CharField(max_length=200, verbose_name='药品名称', help_text='药品名称')
+    medicine_description = models.TextField(verbose_name='药品说明', help_text='药品说明')
+    create_time = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.medicine_name
+
+    class Meta:
+        db_table = 'medicinestock'
+        verbose_name = '药品库存上报记录'
+        verbose_name_plural = verbose_name
+        ordering = ['-create_time']

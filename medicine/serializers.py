@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from medicine.models import Medicine, MedicineType
+from medicine.models import Medicine, MedicineType, MedicineStock
 
 
 class Medicineserializer(serializers.ModelSerializer):
@@ -13,3 +13,9 @@ class MedicineTypeSerializer(serializers.ModelSerializer):
         model = MedicineType
         # fields = '__all__'
         exclude = ['medicine_number']
+
+
+class MedicineStockSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MedicineStock
+        fields = '__all__'

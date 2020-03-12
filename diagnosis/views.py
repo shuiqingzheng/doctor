@@ -125,13 +125,13 @@ class DiaDetailPatientView(viewsets.ModelViewSet):
         except PatientUser.DoesNotExist:
             raise ValueError('不存在')
 
-        # TODO-支付接口更改状态 business_state
+        # TODO-支付接口更改状态 pay_state
         # 订单默认信息
         order_default_info = {
             'order_num': create_order_number(QuestionOrder),
-            'pay_state': '未支付',
+            'pay_state': '未支付',   # 订单状态
             'question_order_form': '复诊',
-            'business_state': '已支付',
+            'business_state': '已支付',   # 复诊的状态
             'patient_id': patient.id,
             'doctor_id': doctor.id
         }
@@ -174,10 +174,16 @@ class HistoryView(viewsets.ModelViewSet):
             patient = PatientUser.objects.get(id=patient_id)
         except PatientUser.DoesNotExist:
             patient = None
-
         return patient
 
-    def create(self, request, patient_id, *args, **kwargs):
+    def valid_diadetail_info(self, diagdetail_id):
+        try:
+            diadetail = DiaDetail.objects.get(id=diagdetail_id)
+        except DiaDetail.DoesNotExist:
+            diadetail = None
+        return diadetail
+
+    def create(self, request, patient_id, diagdetail_id, *args, **kwargs):
         """
         - 医生为患者创建病历
         """
@@ -185,8 +191,12 @@ class HistoryView(viewsets.ModelViewSet):
 
         # 患者基本信息
         patient = self.valid_patient_info(patient_id)
+        diadetail = self.valid_diadetail_info(diagdetail_id)
         if not patient:
             return Response({'detail': '用户不存在'}, status=status.HTTP_404_NOT_FOUND)
+
+        if not diadetail:
+            return Response({'detail': '复诊详情不存在'}, status=status.HTTP_404_NOT_FOUND)
 
         data = {
             'patient_id': patient.id,
@@ -197,6 +207,9 @@ class HistoryView(viewsets.ModelViewSet):
         s = HistorySerializer(data=data)
         s.is_valid(raise_exception=True)
         s.save()
+
+        diadetail.order_question.business_state = '已完成'
+        diadetail.order_question.save()
         return Response(s.data)
 
     @swagger_auto_schema(responses={'200': SwaggerHistorySerializer})

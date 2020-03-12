@@ -13,6 +13,7 @@ upload
 # /doctor/settings.py
 shell.py
 wo.pid
+/utils/wxpay.py
 
 # C extensions
 *.so

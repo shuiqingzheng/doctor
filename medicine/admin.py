@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.shortcuts import reverse
 from django.utils.html import format_html
-from medicine.models import Medicine, MedicineType
+from medicine.models import Medicine, MedicineType, MedicineStock
 
 
 @admin.register(MedicineType)
@@ -20,3 +20,9 @@ class MedicineTypeAdmin(admin.ModelAdmin):
 class MedicineAdmin(admin.ModelAdmin):
     list_display = ('pk', 'officical_name', 'product_name', 'type_one', 'type_two', 'type_three', 'product_state')
     search_fields = ('pk', 'officical_name', 'product_name', 'type_one', 'type_two', 'type_three')
+
+
+@admin.register(MedicineStock)
+class MedicineStockAdmin(admin.ModelAdmin):
+    list_display = ('id', 'medicine_name', 'medicine_description', 'create_time')
+    search_fields = ('medicine_name', )

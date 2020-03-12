@@ -150,6 +150,17 @@ class DoctorSetTime(models.Model):
 
     end_time = models.DateTimeField(verbose_name='结束时间', help_text='结束时间')
 
+    WEEK_DAY_CHOICES = (
+        ('周一', '周一'),
+        ('周二', '周二'),
+        ('周三', '周三'),
+        ('周四', '周四'),
+        ('周五', '周五'),
+        ('周六', '周六'),
+        ('周日', '周日'),
+    )
+    week_day = models.CharField(max_length=4, choices=WEEK_DAY_CHOICES, default='周一', blank=True, verbose_name='周几', help_text='周几')
+
     def __str__(self):
         return '{}'.format(self.pk)
 

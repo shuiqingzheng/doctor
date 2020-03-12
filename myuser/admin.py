@@ -26,5 +26,5 @@ class DoctorUserAdmin(BaseUserAdmin, admin.ModelAdmin):
 
 @admin.register(DoctorSetTime)
 class DoctorSetTimeAdmin(admin.ModelAdmin):
-    list_display = ('id', 'start_time', 'end_time', 'owner')
+    list_display = ('id', 'start_time', 'end_time', 'week_day', 'owner')
     search_fields = ('id', 'start_time', 'end_time', 'owner__owner__phone')

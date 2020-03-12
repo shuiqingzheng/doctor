@@ -132,7 +132,7 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)
@@ -211,7 +211,8 @@ REDIS_DB = 2
 # 验证码过期时间
 REDIS_KEY_TTL = 5 * 60
 
-DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
+DATETIME_FORMAT = '%H:%M:%S'
+# DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 DATETIME_INPUT_FORMATS = ['%Y-%m-%d %H:%M:%S', ]
 
 # sentry_sdk.init(

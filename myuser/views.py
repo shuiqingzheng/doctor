@@ -8,7 +8,7 @@ from django.db import transaction
 from aduser.models import AdminUser
 from myuser.models import PatientUser, DoctorUser, DoctorSetTime
 from myuser.serializers import (
-    AdminUserRegisterSerializer, SmsSerializer,
+    AdminUserRegisterSerializer, SmsSerializer, ForgetPasswordSerializer,
     PatientSerializer, DoctorSerializer, PatientInfoSerializer,
     AdminUserSerializer, DoctorInfoSerializer, DoctorRetrieveSerializer,
     DoctorUpdateSerializer, DoctorSetTimeSerializer, PatientRetrieveSerializer
@@ -43,8 +43,22 @@ class BaseRegisterView(object):
     def get_serializer_class(self):
         if self.action == 'create':
             return AdminUserRegisterSerializer
+        elif self.action == 'update':
+            return ForgetPasswordSerializer
 
         return self.serializer_class
+
+    def update(self, request, *args, **kwargs):
+        """
+        - 用户(患者或医生)根据手机和验证码进行修改密码
+        """
+        s = self.get_serializer(data=request.data)
+        s.is_valid(raise_exception=True)
+        data = s.validated_data
+        user = AdminUser.objects.get(phone=data.get('phone'))
+        user.set_password(data['password'])
+        user.save()
+        return Response({'detail': '密码修改成功'})
 
     def create(self, request, *args, **kwargs):
         """
@@ -69,10 +83,6 @@ class BaseRegisterView(object):
 
 
 class PatientView(BaseRegisterView, viewsets.ModelViewSet):
-    """
-    患者:
-    create()->手机号注册;
-    """
     permission_classes = [AllowAny, ]
     # requsired_scopes = ['basic']
     queryset = PatientUser.objects.all()
@@ -262,11 +272,14 @@ class DoctorInfoView(viewsets.ModelViewSet):
         return Response({'detail': '修改成功'})
 
 
-class DoctorSetTimeView(viewsets.ModelViewSet):
-    permission_classes = [TokenHasScope, DoctorBasePermission]
-    required_scopes = ['doctor']
+class BaseSetTimeView(viewsets.ModelViewSet):
     queryset = DoctorSetTime.objects.all()
     serializer_class = DoctorSetTimeSerializer
+
+
+class DoctorSetTimeView(BaseSetTimeView):
+    permission_classes = [TokenHasScope, DoctorBasePermission]
+    required_scopes = ['doctor']
 
     def create(self, request, *args, **kwargs):
         """
@@ -276,4 +289,30 @@ class DoctorSetTimeView(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(owner=doctor)
+        return Response(serializer.data)
+
+
+class PatientGetTimeView(BaseSetTimeView):
+    permission_classes = [TokenHasScope, ]
+    required_scopes = ['patient']
+
+    def validate_doctor_info(self, pk):
+        try:
+            doctor = DoctorUser.objects.get(pk=pk)
+        except DoctorUser.DoesNotExist:
+            doctor = None
+        return doctor
+
+    def list(self, request, doctor_id, *args, **kwargs):
+        """
+        - 根据医生ID获取对应医生的可预约时间列表
+        """
+        doctor = self.validate_doctor_info(doctor_id)
+        queryset = self.get_queryset().filter(owner=doctor)
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)

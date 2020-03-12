@@ -2,8 +2,12 @@ from celery_tasks.celery import app
 # aliyun sms API
 from utils.sms import aliyun_send_sms_common_api
 
+
 @app.task(name='register_task')
 def register_task(phone, sms_code):
+    """
+    用户注册过程中给手机发送的短信验证码
+    """
     action = "SendSms"
     query_param_dict = {
         "PhoneNumbers": "{}".format(phone),

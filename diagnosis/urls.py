@@ -8,7 +8,8 @@ from myuser.views import PatientView
 
 urlpatterns = [
     # 病历
-    path('history/<int:patient_id>/', HistoryView.as_view({'post': 'create', 'get': 'user_history'}), name='history'),
+    path('history/<int:patient_id>/', HistoryView.as_view({'get': 'user_history'}), name='history-pk-detail'),
+    path('history/<int:patient_id>/<int:diagdetail_id>/', HistoryView.as_view({'post': 'create'}), name='history-create'),
 
     # 复诊
     # 复诊记录：医生-全部；患者-个人所有
