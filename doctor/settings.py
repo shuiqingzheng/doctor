@@ -223,3 +223,12 @@ DATETIME_INPUT_FORMATS = ['%Y-%m-%d %H:%M:%S', ]
 #     # django.contrib.auth) you may enable sending PII data.
 #     send_default_pii=True
 # )
+
+# 微信相关参数
+APPID = 'wx355b0ef93ef23f9a'
+MCHID = '1328839501'
+APPSECRET = 'fab3b340e0d2964c2ba70908496c021e'
+# key设置路径：微信商户平台(pay.weixin.qq.com)-->账户设置-->API安全-->密钥设置
+KEY = '243278132033cc5c47e869c8c34d015e'
+OPENID_URL = "https://api.weixin.qq.com/sns/jscode2session"
+NOTIFY_URL = 'http://127.0.0.1:8000/order/callback/'

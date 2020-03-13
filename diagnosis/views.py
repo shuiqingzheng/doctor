@@ -157,7 +157,12 @@ class DiaDetailPatientView(viewsets.ModelViewSet):
                 raise e
             transaction.savepoint_commit(point)
 
-        return Response(s.data)
+        response_data = s.data
+        response_data.update(
+            {'order_id': q_obj.id}
+        )
+
+        return Response(response_data)
 
 
 class HistoryView(viewsets.ModelViewSet):

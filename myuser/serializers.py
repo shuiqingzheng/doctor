@@ -4,7 +4,6 @@ from aduser.models import AdminUser
 from django.contrib.auth.hashers import make_password
 from utils.random_number import create_random_number
 from .utils import redis_conn
-
 from celery_tasks.tasks import register_task
 from django.conf import settings
 
@@ -97,10 +96,6 @@ class ForgetPasswordSerializer(BaseRegisterSerializer):
             pass
 
         return attrs
-
-    def update(self, instance, validated_data):
-        print(instance, '=----===---', validated_data)
-        return
 
 
 class AdminSerializer(serializers.ModelSerializer):
