@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.shortcuts import reverse
 from django.utils.html import format_html
-from myuser.models import PatientUser, DoctorUser, DoctorSetTime
+from myuser.models import PatientUser, DoctorUser, DoctorSetTime, UploadImage
 
 
 class BaseUserAdmin(object):
@@ -28,3 +28,8 @@ class DoctorUserAdmin(BaseUserAdmin, admin.ModelAdmin):
 class DoctorSetTimeAdmin(admin.ModelAdmin):
     list_display = ('id', 'start_time', 'end_time', 'week_day', 'owner')
     search_fields = ('id', 'start_time', 'end_time', 'owner__owner__phone')
+
+
+@admin.register(UploadImage)
+class UploadImageAdmin(admin.ModelAdmin):
+    list_display = ('id',)

@@ -23,7 +23,6 @@ class MedicineView(viewsets.ModelViewSet):
     # required_any_scopes = ['doctor', 'patient']
     serializer_class = Medicineserializer
     filter_backends = [SearchFilter, DjangoFilterBackend]
-    filter_backends = [DjangoFilterBackend]
     search_fields = ['type_one', 'type_two', 'type_three', 'good_for',
                      'officical_name', 'price', 'product_source', ]
     filterset_fields = ('type_one', 'type_two', 'type_three')
