@@ -1,11 +1,14 @@
 from rest_framework import serializers
 from order.models import QuestionOrder
+from django.conf import settings
 
 
 class QuestionOrderSerializer(serializers.ModelSerializer):
+    create_time = serializers.DateTimeField(format=settings.DATETIME_TOTAL_FORMAT)
+
     class Meta:
         model = QuestionOrder
-        fields = '__all__'
+        exclude = ['patient_id', 'doctor_id']
 
 
 class PaySerializer(serializers.Serializer):

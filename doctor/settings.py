@@ -212,7 +212,7 @@ REDIS_DB = 2
 REDIS_KEY_TTL = 5 * 60
 
 DATETIME_FORMAT = '%H:%M:%S'
-# DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
+DATETIME_TOTAL_FORMAT = '%Y-%m-%d %H:%M:%S'
 DATETIME_INPUT_FORMATS = ['%Y-%m-%d %H:%M:%S', ]
 
 # sentry_sdk.init(

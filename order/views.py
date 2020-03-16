@@ -1,10 +1,51 @@
-from rest_framework import views, generics, status
+from django.http import Http404
+from rest_framework import views, generics, status, viewsets
 from rest_framework.response import Response
 from utils.wxopenid import get_openid
-from order.serializers import PaySerializer, CallBackSerializer
+from order.serializers import (
+    PaySerializer, CallBackSerializer, QuestionOrderSerializer,
+)
 from order.models import QuestionOrder
 from celery_tasks.tasks import wx_pay
+from myuser.models import PatientUser
+from diagnosis.serializers import (
+    DiaDetailSerializer, VideoDetailSerializer, ImageDetailSerializer
+)
 from oauth2_provider.contrib.rest_framework import TokenHasScope
+
+
+class QuestionOrderView(viewsets.ModelViewSet):
+    permission_classes = [TokenHasScope, ]
+    required_scopes = ['patient']
+    serializer_class = QuestionOrderSerializer
+
+    def get_queryset(self):
+        try:
+            patient = PatientUser.objects.get(owner=self.request.auth.user)
+        except PatientUser.DoesNotExist:
+            raise Http404
+        return QuestionOrder.objects.filter(patient_id=patient.id).order_by('-create_time')
+
+    def retrieve(self, request, *args, **kwargs):
+        """
+        - 获取订单详情
+        """
+        response_data = dict()
+        order = self.get_object()
+        order_type = {
+            'imagedetail': ImageDetailSerializer,
+            'videodetail': VideoDetailSerializer,
+            'diadetail': DiaDetailSerializer
+        }
+        for key, model_serializer in order_type.items():
+            if hasattr(order, key):
+                detail_obj = getattr(order, key)
+                s_model = model_serializer(detail_obj)
+                response_data['detail_info'] = s_model.data
+
+        s_order = self.get_serializer(order)
+        response_data['order_info'] = s_order.data
+        return Response(response_data)
 
 
 class OpenIDView(views.APIView):

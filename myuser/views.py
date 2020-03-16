@@ -188,17 +188,16 @@ class PatientInfoView(viewsets.ModelViewSet):
         return Response({'detail': '修改成功'})
 
 
-class DoctorView(BaseRegisterView, viewsets.ModelViewSet):
+class DoctorView(viewsets.ModelViewSet):
     """
-    retrieve:
-        查询开通复诊的医生
     """
-    permission_classes = [AllowAny, ]
-    # requsired_scopes = ['basic']
+    permission_classes = [TokenHasScope, ]
+    required_scopes = ['patient']
     queryset = DoctorUser.objects.filter(is_success=True)
     serializer_class = DoctorSerializer
-    filter_backends = [filters.SearchFilter, ]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['hospital', 'department', 'owner__username', 'good_at']
+    ordering_fields = ['owner__username', 'score', 'server_times']
     model = DoctorUser
 
     def get_queryset(self):
@@ -216,6 +215,16 @@ class DoctorView(BaseRegisterView, viewsets.ModelViewSet):
         - 按要求查询'复诊'医生（医院，科室，姓名，擅长）
         """
         return super().list(request, *args, **kwargs)
+
+
+class DoctorRegisterView(BaseRegisterView, viewsets.ModelViewSet):
+    """
+    - 医生注册
+    """
+    permission_classes = [AllowAny, ]
+    queryset = DoctorUser.objects.filter(is_success=True)
+    serializer_class = DoctorSerializer
+    model = DoctorUser
 
 
 class DoctorInfoView(viewsets.ModelViewSet):

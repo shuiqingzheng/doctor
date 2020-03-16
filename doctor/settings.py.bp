@@ -215,6 +215,7 @@ CELERYD_MAX_TASKS_PER_CHILD = 40
 REDIS_KEY_TTL = 5 * 60
 
 DATETIME_FORMAT = '%H:%M:%S'
+DATETIME_TOTAL_FORMAT = '%Y-%m-%d %H:%M:%S'
 DATETIME_INPUT_FORMATS = ['%Y-%m-%d %H:%M:%S', ]
 
 sentry_sdk.init(

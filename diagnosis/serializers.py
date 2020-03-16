@@ -1,9 +1,21 @@
 from rest_framework import serializers
-from diagnosis.models import DiaDetail, History, Recipe, DiaMedicine
+from diagnosis.models import DiaDetail, History, Recipe, DiaMedicine, ImageDetail, VideoDetail
 from myuser.models import PatientUser, UploadImage
 from myuser.serializers import PatientBaseInfoSerializer
 from medicine.models import Medicine
 from django.conf import settings
+
+
+class ImageDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ImageDetail
+        fields = '__all__'
+
+
+class VideoDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VideoDetail
+        fields = '__all__'
 
 
 class DiaDetailSerializer(serializers.ModelSerializer):

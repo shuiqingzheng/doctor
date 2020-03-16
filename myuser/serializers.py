@@ -245,8 +245,9 @@ class DoctorSetTimeSerializer(serializers.ModelSerializer):
         ('周日', '周日'),
     )
     week_day = serializers.ChoiceField(choices=WEEK_DAY_CHOICES, label='周几')
-
+    # 时间段总长
     total_time = 15 * 60
+    # 时间间隔
     plus_time = 10 * 60
 
     class Meta:
@@ -270,7 +271,7 @@ class DoctorSetTimeSerializer(serializers.ModelSerializer):
         end_total_seconds = (end_time.hour * 60 * 60) + (end_time.minute * 60) + (end_time.second)
 
         if (end_total_seconds - start_total_seconds) < self.total_time:
-            raise serializers.ValidationError('不符合要求')
+            raise serializers.ValidationError('时间段不可少于15分钟')
 
         # 查询所有的归于自身的开始时间
         if hasattr(auth.user, 'doctor'):
@@ -304,13 +305,13 @@ class DoctorSetTimeSerializer(serializers.ModelSerializer):
 
             if current_index == 0:
                 if (new_data_list[current_index+1]['s']-end_total_seconds) < self.plus_time:
-                    raise serializers.ValidationError('设置时间不合理')
+                    raise serializers.ValidationError('时间段间隔不可少于10分钟')
             elif current_index == (len(new_data_list) - 1):
                 if (start_total_seconds - new_data_list[current_index-1]['e']) < self.plus_time:
-                    raise serializers.ValidationError('设置时间不合理')
+                    raise serializers.ValidationError('时间段间隔不可少于10分钟')
             else:
                 sn = start_total_seconds - new_data_list[current_index-1]['e']
                 ne = new_data_list[current_index+1]['s'] - end_total_seconds
                 if sn < self.plus_time or ne < self.plus_time:
-                    raise serializers.ValidationError('设置时间不合适')
+                    raise serializers.ValidationError('时间段间隔不可少于10分钟')
         return attrs

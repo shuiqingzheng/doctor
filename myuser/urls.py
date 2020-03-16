@@ -3,7 +3,8 @@ from myuser.views import (
     index,
     PatientView, DoctorView, SmsView,
     PatientInfoView, DoctorInfoView,
-    DoctorSetTimeView, PatientGetTimeView
+    DoctorSetTimeView, PatientGetTimeView,
+    DoctorRegisterView,
 )
 from aduser.views import DoctorPasswordView, PatientPasswordView
 
@@ -23,12 +24,13 @@ urlpatterns = [
     path('patient/time/<int:doctor_id>/', PatientGetTimeView.as_view({'get': 'list'}), name='patient-get-settime'),
 
     # 医生
-    path('doctor/register/', DoctorView.as_view({'post': 'create'}), name='doctor-register'),
+    path('doctor/register/', DoctorRegisterView.as_view({'post': 'create'}), name='doctor-register'),
     path('doctor/resetpassword/', DoctorPasswordView.as_view({'put': 'update'}), name='doctor-reset-password'),
     path('doctor/info/', DoctorInfoView.as_view({'get': 'retrieve'}), name='doctor-info'),
     path('doctor/update/', DoctorInfoView.as_view({'post': 'update'}), name='doctor-info-update'),
 
-    # 复诊医生列表
+    # 复诊医生列表[患者获取]
+    path('doctor/', DoctorView.as_view({'get': 'list'}), name='doctor-list'),
     path('doctor/review/', DoctorView.as_view({'get': 'list'}), name='doctor-review-list'),
     path('doctor/review/<int:pk>/', DoctorView.as_view({'get': 'retrieve'}), name='doctor-review-pk'),
 

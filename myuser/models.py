@@ -102,6 +102,8 @@ class DoctorUser(BaseUser):
 
     score = models.IntegerField(blank=True, default=0, verbose_name='患者好评', help_text='患者好评')
 
+    server_times = models.IntegerField(default=0, verbose_name='服务患者次数', help_text='服务患者次数')
+
     good_at = models.TextField(blank=True, null=True, verbose_name='擅长诊疗方向', help_text='擅长诊疗方向')
 
     good_point = models.CharField(max_length=200, blank=True, null=True, verbose_name='执业点', help_text='执业点')
