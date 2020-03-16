@@ -3,7 +3,7 @@ from rest_framework import views, generics, status, viewsets
 from rest_framework.response import Response
 from utils.wxopenid import get_openid
 from order.serializers import (
-    PaySerializer, CallBackSerializer, QuestionOrderSerializer,
+    PaySerializer, CallBackSerializer, OrderQuestionOrderSerializer,
 )
 from order.models import QuestionOrder
 from celery_tasks.tasks import wx_pay
@@ -17,7 +17,7 @@ from oauth2_provider.contrib.rest_framework import TokenHasScope
 class QuestionOrderView(viewsets.ModelViewSet):
     permission_classes = [TokenHasScope, ]
     required_scopes = ['patient']
-    serializer_class = QuestionOrderSerializer
+    serializer_class = OrderQuestionOrderSerializer
 
     def get_queryset(self):
         try:

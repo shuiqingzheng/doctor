@@ -4,7 +4,13 @@ from django.conf import settings
 
 
 class QuestionOrderSerializer(serializers.ModelSerializer):
-    create_time = serializers.DateTimeField(format=settings.DATETIME_TOTAL_FORMAT)
+    class Meta:
+        model = QuestionOrder
+        fields = '__all__'
+
+
+class OrderQuestionOrderSerializer(serializers.ModelSerializer):
+    create_time = serializers.DateTimeField(format=settings.DATETIME_TOTAL_FORMAT, required=False)
 
     class Meta:
         model = QuestionOrder
