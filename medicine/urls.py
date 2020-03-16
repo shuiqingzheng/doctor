@@ -12,4 +12,5 @@ urlpatterns = [
     path('stock/<int:pk>/', MedicineStockView.as_view({'delete': 'destroy', 'get': 'retrieve'}), name='medicinestock'),
 
     path('type/<str:type_level>/', MedicineTypeView.as_view({'get': 'medicineType'}), name='medicineType-list'),
+    path('type/children/<int:father_id>/', MedicineTypeView.as_view({'get': 'get_type_by_father'}), name='medicinetype-list'),
 ]

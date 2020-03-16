@@ -48,6 +48,28 @@ class MedicineTypeView(viewsets.ModelViewSet):
     next_type_name = 'next_type'
     allowd_level = ['one', 'two', 'three', 'all']
 
+    def get_type_by_father(self, request, father_id, *args, **kwargs):
+        """
+        - 根据father_id获取分类
+        """
+        response_data = list()
+        level_type = self.queryset.filter(father_id=father_id)
+        level_type_id_list = [obj.id for obj in level_type]
+        end_type = self.queryset.filter(father_id__in=level_type_id_list)
+        for l in level_type:
+            one_serializer = self.get_serializer(l)
+            one_data = one_serializer.data
+
+            end_objs = end_type.filter(father_id=l.id)
+            end_serializers = self.get_serializer(end_objs, many=True)
+
+            one_data.update({
+                '{}'.format(self.next_type_name): end_serializers.data
+            })
+            response_data.append(one_data)
+
+        return Response(response_data)
+
     def medicineType(self, request, type_level, *args, **kwargs):
         """
         - 返回药品类型列表
