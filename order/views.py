@@ -20,11 +20,17 @@ class QuestionOrderView(viewsets.ModelViewSet):
     serializer_class = OrderQuestionOrderSerializer
 
     def get_queryset(self):
-        try:
-            patient = PatientUser.objects.get(owner=self.request.auth.user)
-        except PatientUser.DoesNotExist:
-            raise Http404
-        return QuestionOrder.objects.filter(patient_id=patient.id).order_by('-create_time')
+        auth = self.request.auth
+
+        if hasattr(auth, 'user'):
+            user = auth.user
+            try:
+                patient = PatientUser.objects.get(owner=user)
+            except PatientUser.DoesNotExist:
+                raise Http404
+            return QuestionOrder.objects.filter(patient_id=patient.id).order_by('-create_time')
+        else:
+            return QuestionOrder.objects.order_by('-create_time')
 
     def retrieve(self, request, *args, **kwargs):
         """

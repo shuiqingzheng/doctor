@@ -46,6 +46,8 @@ class DiaDetailView(viewsets.ModelViewSet):
         if token is not None:
             if hasattr(token.user, 'patient'):
                 return self.queryset.filter(patient_id=token.user.patient.id)
+            if hasattr(token.user, 'doctor'):
+                return self.queryset.filter(doctor_id=token.user.doctor.id)
 
         return self.queryset
 
