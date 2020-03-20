@@ -61,8 +61,8 @@ class MyUserAdmin(UserAdmin):
     list_filter = ('is_staff', 'groups',)
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
-        ('Personal info', {'fields': ('username', 'phone', 'sex',)}),
-        ('Permissions', {'fields': ('is_staff', 'groups', 'user_permissions',)}),
+        ('个人信息', {'fields': ('username', 'phone', 'sex',)}),
+        ('权限', {'fields': ('is_staff', 'groups', 'user_permissions',)}),
     )
     add_fieldsets = (
         (None, {
@@ -70,9 +70,19 @@ class MyUserAdmin(UserAdmin):
             'fields': ('email', 'username', 'phone', 'password1', 'password2')}
          ),
     )
+    perm_fieldsets = (
+        (None, {'fields': ('email', 'password')}),
+        ('个人信息', {'fields': ('username', 'phone', 'sex',)}),
+    )
     search_fields = ('email', 'username', 'phone', 'id')
     ordering = ('pk', 'phone',)
     filter_horizontal = ('groups', 'user_permissions',)
+
+    def get_fieldsets(self, request, obj=None):
+        if not request.user.is_superuser:
+            return self.perm_fieldsets
+
+        return super().get_fieldsets(request, obj)
 
 
 admin.site.register(AdminUser, MyUserAdmin)
