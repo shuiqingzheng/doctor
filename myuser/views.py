@@ -1,26 +1,37 @@
 from django.shortcuts import render
+from django.http import Http404
 from rest_framework import viewsets, generics, status, filters
 from rest_framework.response import Response
-# from rest_framework.parsers import MultiPartParser
+from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import AllowAny
 from django.db.models import Count, Min
 from django.db import transaction
 from aduser.models import AdminUser
-from myuser.models import PatientUser, DoctorUser, DoctorSetTime
+from myuser.models import PatientUser, DoctorUser, DoctorSetTime, UploadImage
 from myuser.serializers import (
     AdminUserRegisterSerializer, SmsSerializer, ForgetPasswordSerializer,
     PatientSerializer, DoctorSerializer, PatientInfoSerializer,
     AdminUserSerializer, DoctorInfoSerializer, DoctorRetrieveSerializer,
-    DoctorUpdateSerializer, DoctorSetTimeSerializer, PatientRetrieveSerializer
+    DoctorUpdateSerializer, DoctorSetTimeSerializer, PatientRetrieveSerializer,
+    UploadImageSerializer, DoctorUpdateSerializer
 )
 from diagnosis.models import DiaDetail
-from myuser.utils import redis_conn
+from medicine.permissions import TokenHasPermission
+from myuser.utils import redis_conn, UpdateModelSameCode
 from myuser.permissions import PatientBasePermission, DoctorBasePermission
 from oauth2_provider.contrib.rest_framework import TokenHasScope
 
 
 def index(request, *args, **kwargs):
     return render(request, 'index.html')
+
+
+class UploadImageView(viewsets.ModelViewSet):
+    permission_classes = [TokenHasPermission, ]
+    # required_scopes = ['patient']
+    serializer_class = UploadImageSerializer
+    queryset = UploadImage.objects.order_by('-pk')
+    parser_classes = [MultiPartParser]
 
 
 class SmsView(generics.RetrieveAPIView):
@@ -40,6 +51,7 @@ class SmsView(generics.RetrieveAPIView):
 
 
 class BaseRegisterView(object):
+
     def get_serializer_class(self):
         if self.action == 'create':
             return AdminUserRegisterSerializer
@@ -134,7 +146,7 @@ class PatientView(BaseRegisterView, viewsets.ModelViewSet):
         return Response(response_context)
 
 
-class PatientInfoView(viewsets.ModelViewSet):
+class PatientInfoView(UpdateModelSameCode, viewsets.ModelViewSet):
     permission_classes = [TokenHasScope, ]
     required_scopes = ['patient']
     queryset = PatientUser.objects.all()
@@ -148,43 +160,19 @@ class PatientInfoView(viewsets.ModelViewSet):
 
     def get_object(self):
         user = self.request.auth.user
-        p = PatientUser.objects.get(owner=user)
+        try:
+            p = PatientUser.objects.get(owner=user)
+        except PatientUser.DoesNotExist:
+            raise Http404
         return p
 
-    def update(self, request, *args, **kwargs):
+    def partial_update(self, request, *args, **kwargs):
         """
         - 患者补充或者修改自身信息
         """
         data = request.data
-        patient_data = dict()
-        admin_data = dict()
-        # 拆分数据
-        for key, value in data.items():
-            if not value:
-                continue
-
-            if hasattr(PatientUser, key):
-                patient_data[key] = value
-
-            if hasattr(AdminUser, key):
-                admin_data[key] = value
-
         patient = self.get_object()
-        with transaction.atomic():
-            point = transaction.savepoint()
-
-            try:
-                patient_serializer = PatientSerializer(patient, data=patient_data, partial='partial')
-                patient_serializer.is_valid(raise_exception=True)
-                patient_serializer.save()
-                admin_serializer = AdminUserSerializer(patient.owner, data=admin_data, partial='partial')
-                admin_serializer.is_valid(raise_exception=True)
-                admin_serializer.save()
-            except Exception as e:
-                transaction.savepoint_rollback(point)
-                raise e
-            transaction.savepoint_commit(point)
-
+        self.atomic_func(data, patient, PatientUser, PatientSerializer, AdminUserSerializer)
         return Response({'detail': '修改成功'})
 
 
@@ -227,7 +215,7 @@ class DoctorRegisterView(BaseRegisterView, viewsets.ModelViewSet):
     model = DoctorUser
 
 
-class DoctorInfoView(viewsets.ModelViewSet):
+class DoctorInfoView(UpdateModelSameCode, viewsets.ModelViewSet):
     permission_classes = [TokenHasScope, ]
     required_scopes = ['doctor']
     queryset = DoctorUser.objects.all()
@@ -241,43 +229,19 @@ class DoctorInfoView(viewsets.ModelViewSet):
 
     def get_object(self):
         user = self.request.auth.user
-        doctor = DoctorUser.objects.get(owner=user)
+        try:
+            doctor = DoctorUser.objects.get(owner=user)
+        except DoctorUser.DoesNotExist:
+            raise Http404
         return doctor
 
-    def update(self, request, *args, **kwargs):
+    def partial_update(self, request, *args, **kwargs):
         """
         - 医生补充或者修改自身信息
         """
         data = request.data
-        doctor_data = dict()
-        admin_data = dict()
-        # 拆分数据
-        for key, value in data.items():
-            if not value:
-                continue
-
-            if hasattr(DoctorUser, key):
-                doctor_data[key] = value
-
-            if hasattr(AdminUser, key):
-                admin_data[key] = value
-
         doctor = self.get_object()
-        with transaction.atomic():
-            point = transaction.savepoint()
-
-            try:
-                patient_serializer = DoctorUpdateSerializer(doctor, data=doctor_data, partial='partial')
-                patient_serializer.is_valid(raise_exception=True)
-                patient_serializer.save()
-                admin_serializer = AdminUserSerializer(doctor.owner, data=admin_data, partial='partial')
-                admin_serializer.is_valid(raise_exception=True)
-                admin_serializer.save()
-            except Exception as e:
-                transaction.savepoint_rollback(point)
-                raise e
-            transaction.savepoint_commit(point)
-
+        self.atomic_func(data, doctor, DoctorUser, DoctorUpdateSerializer, AdminUserSerializer)
         return Response({'detail': '修改成功'})
 
 

@@ -14,7 +14,7 @@ class BaseDetailAdmin(BaseOrderAdmin):
 
 @admin.register(DiaDetail)
 class DiaDetailAdmin(BaseDetailAdmin, admin.ModelAdmin):
-    list_display = ('id', 'patient_main', 'is_video', 'room_number', 'patient_info', 'doctor_info', 'order_question', 'order_medicine', 'create_time')
+    list_display = ('id', 'patient_main', 'is_video', 'room_number', 'patient_id', 'doctor_id', 'order_question', 'order_medicine', 'create_time')
     search_fields = ('patient_main', 'room_number')
 
 

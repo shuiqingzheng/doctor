@@ -64,12 +64,6 @@ class SwaggerPDDSerializer(serializers.Serializer):
     image_three = serializers.URLField(label='上传图片3', required=False)
 
 
-class SwaggerUploadSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = UploadImage
-        fields = '__all__'
-
-
 class HistorySerializer(serializers.ModelSerializer):
 
     class Meta:

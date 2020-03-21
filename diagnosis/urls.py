@@ -1,7 +1,7 @@
 from django.urls import path
 from diagnosis.views import (
     HistoryView, DiaDetailView, DiaDetailPatientView,
-    RecipeView, UploadImageView
+    RecipeView
 )
 from myuser.views import PatientView
 
@@ -17,7 +17,7 @@ urlpatterns = [
     path('review/<int:pk>/', DiaDetailView.as_view({'get': 'retrieve'}), name='diadetail-retrieve'),
     # 复诊患者创建病情描述
     path('review/create/<int:doctor_id>/', DiaDetailPatientView.as_view({'post': 'create'}), name='diadetail-create'),
-    path('review/uploadimage/', UploadImageView.as_view({'post': 'create'}), name='diadetail-uploadimage'),
+    # path('review/uploadimage/', UploadImageView.as_view({'post': 'create'}), name='diadetail-uploadimage'),
     # 患者复诊主页面
     path('review/patient/', PatientView.as_view({'get': 'main'}), name='patient-review-main'),
 

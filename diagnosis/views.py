@@ -13,7 +13,6 @@ from diagnosis.serializers import (
     DiaDetailSerializer, HistorySerializer, SwaggerHistorySerializer,
     RecipeSerializer, CreateHistorySerializer, PatientDiaDetailSerializer,
     SwaggerPDDSerializer, RecipeRetrieveSerializer, DiaMedicineSerializer,
-    SwaggerUploadSerializer
 )
 from medicine.permissions import TokenHasPermission
 from myuser.models import PatientUser, DoctorUser, UploadImage
@@ -73,14 +72,6 @@ class DiaDetailView(viewsets.ModelViewSet):
         response_data['review_info'] = serializer.data
 
         return Response(response_data)
-
-
-class UploadImageView(viewsets.ModelViewSet):
-    permission_classes = [TokenHasScope, PatientBasePermission]
-    required_scopes = ['patient']
-    serializer_class = SwaggerUploadSerializer
-    queryset = UploadImage.objects.order_by('-pk')
-    parser_classes = [MultiPartParser]
 
 
 class DiaDetailPatientView(viewsets.ModelViewSet):
@@ -190,6 +181,15 @@ class HistoryView(viewsets.ModelViewSet):
             diadetail = None
         return diadetail
 
+    def valiad_info(self, dia, patient, doctor):
+        if not any([dia, patient, doctor]):
+            return False
+
+        if not all([dia.patient_id == patient.id, dia.doctor_id == doctor.id]):
+            return False
+
+        return True
+
     def create(self, request, patient_id, diagdetail_id, *args, **kwargs):
         """
         - 医生为患者创建病历
@@ -199,11 +199,11 @@ class HistoryView(viewsets.ModelViewSet):
         # 患者基本信息
         patient = self.valid_patient_info(patient_id)
         diadetail = self.valid_diadetail_info(diagdetail_id)
-        if not patient:
-            return Response({'detail': '用户不存在'}, status=status.HTTP_404_NOT_FOUND)
-
-        if not diadetail:
-            return Response({'detail': '复诊详情不存在'}, status=status.HTTP_404_NOT_FOUND)
+        if not self.valiad_info(diadetail, patient, doctor):
+            return Response(
+                {'detail': '无法匹配到对应的复诊信息'},
+                status=status.HTTP_404_NOT_FOUND
+            )
 
         data = {
             'patient_id': patient.id,
@@ -217,6 +217,13 @@ class HistoryView(viewsets.ModelViewSet):
 
         diadetail.order_question.business_state = '已完成'
         diadetail.order_question.save()
+
+        # 同时更新当前医生/患者的复诊次数
+        doctor.server_times = doctor.server_times + 1
+        doctor.save()
+        patient.referral_count = patient.referral_count + 1
+        patient.save()
+
         return Response(s.data)
 
     @swagger_auto_schema(responses={'200': SwaggerHistorySerializer})

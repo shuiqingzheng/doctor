@@ -4,7 +4,7 @@ from myuser.views import (
     PatientView, DoctorView, SmsView,
     PatientInfoView, DoctorInfoView,
     DoctorSetTimeView, PatientGetTimeView,
-    DoctorRegisterView,
+    DoctorRegisterView, UploadImageView
 )
 from aduser.views import DoctorPasswordView, PatientPasswordView
 
@@ -12,6 +12,8 @@ from aduser.views import DoctorPasswordView, PatientPasswordView
 urlpatterns = [
     # index
     path('', index, name='index'),
+    path('uploadimage/', UploadImageView.as_view({'post': 'create'}), name='uploadImage'),
+
     # register
     path('sms/<str:phone>/', SmsView.as_view(), name='sms'),
     path('forgetpassword/', PatientView.as_view({'put': 'update'}), name='user-forget-password'),
@@ -20,14 +22,14 @@ urlpatterns = [
     path('patient/register/', PatientView.as_view({'post': 'create'}), name='patient-register'),
     path('patient/info/', PatientInfoView.as_view({'get': 'retrieve'}), name='patient-info'),
     path('patient/resetpassword/', PatientPasswordView.as_view({'put': 'update'}), name='patient-reset-password'),
-    path('patient/update/', PatientInfoView.as_view({'post': 'update'}), name='patient-info-update'),
+    path('patient/update/', PatientInfoView.as_view({'put': 'partial_update'}), name='patient-info-update'),
     path('patient/time/<int:doctor_id>/', PatientGetTimeView.as_view({'get': 'list'}), name='patient-get-settime'),
 
     # 医生
     path('doctor/register/', DoctorRegisterView.as_view({'post': 'create'}), name='doctor-register'),
     path('doctor/resetpassword/', DoctorPasswordView.as_view({'put': 'update'}), name='doctor-reset-password'),
     path('doctor/info/', DoctorInfoView.as_view({'get': 'retrieve'}), name='doctor-info'),
-    path('doctor/update/', DoctorInfoView.as_view({'post': 'update'}), name='doctor-info-update'),
+    path('doctor/update/', DoctorInfoView.as_view({'put': 'partial_update'}), name='doctor-info-update'),
 
     # 复诊医生列表[患者获取]
     path('doctor/', DoctorView.as_view({'get': 'list'}), name='doctor-list'),

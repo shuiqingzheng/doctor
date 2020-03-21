@@ -211,6 +211,10 @@ REDIS_DB = 2
 # 验证码过期时间
 REDIS_KEY_TTL = 5 * 60
 
+# NGINX相关信息
+NGINX_SERVER = '127.0.0.1'
+NGINX_PORT = 8889
+
 DATETIME_FORMAT = '%H:%M:%S'
 DATETIME_TOTAL_FORMAT = '%Y-%m-%d %H:%M:%S'
 DATETIME_INPUT_FORMATS = ['%Y-%m-%d %H:%M:%S', ]
@@ -232,3 +236,5 @@ APPSECRET = 'fab3b340e0d2964c2ba70908496c021e'
 KEY = '243278132033cc5c47e869c8c34d015e'
 OPENID_URL = "https://api.weixin.qq.com/sns/jscode2session"
 NOTIFY_URL = 'http://127.0.0.1:8000/order/callback/'
+# NOTIFY_URL = '/'.join([NGINX_PATH, 'order/callback'])
+# print(NOTIFY_URL)

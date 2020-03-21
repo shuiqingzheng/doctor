@@ -23,34 +23,21 @@ class BaseUser(models.Model):
     def custom_func_upload_to(instance, filename):
         return 'upload/user_picture/{0}/{1}'.format(instance.id, filename)
 
-    user_picture = models.ImageField(upload_to=custom_func_upload_to, null=True, blank=True, verbose_name='用户头像', help_text='用户头像')
-
-    # email = models.EmailField(blank=True, unique=True, null=True, verbose_name='邮箱', help_text='邮箱')
+    user_picture = models.URLField(max_length=200, null=True, blank=True, verbose_name='用户头像', help_text='用户头像')
 
     nick_name = models.CharField(max_length=20, blank=True, verbose_name='微信昵称', help_text='微信昵称')
 
     id_card = models.CharField(max_length=18, blank=True, null=True, unique=True, verbose_name='身份证号', help_text='身份证号')
-
-    # username = models.CharField(null=True, blank=True, max_length=125, verbose_name='姓名', help_text='姓名')
-
-    # phone = models.CharField(max_length=11, blank=True, unique=True, verbose_name='手机号', help_text='手机号')
-
-    # password = models.CharField(max_length=128,)
 
     USER_SEX_CHOICES = (
         ('男', '男'),
         ('女', '女'),
         ('未知', '未知')
     )
-    # sex = models.CharField(choices=USER_SEX_CHOICES, max_length=2, blank=True, null=True, verbose_name='性别', help_text='性别')
-
-    # age = models.IntegerField(blank=True, null=True, verbose_name='年龄', help_text='年龄')
 
     birthday = models.DateField(blank=True, null=True, verbose_name='出生年月', help_text='出生年月')
 
     room_id = models.CharField(max_length=12, blank=True, null=True, verbose_name='视频/语音房间号', help_text='视频/语音房间号')
-
-    # is_active = models.BooleanField(default=True, verbose_name='账号是否激活', help_text='账号是否激活')
 
     def check_password(self, pwd):
         return check_password(pwd, self.password)

@@ -1,11 +1,29 @@
 from rest_framework import serializers
-from myuser.models import PatientUser, DoctorUser, DoctorSetTime
+from myuser.models import PatientUser, DoctorUser, DoctorSetTime, UploadImage
 from aduser.models import AdminUser
 from django.contrib.auth.hashers import make_password
 from utils.random_number import create_random_number
 from .utils import redis_conn
 from celery_tasks.tasks import register_task
 from django.conf import settings
+
+
+class UploadImageSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField(read_only=True, label='图片地址')
+
+    class Meta:
+        model = UploadImage
+        fields = '__all__'
+        extra_kwargs = {
+            'image': {
+                'write_only': True
+            }
+        }
+
+    def get_image_url(self, obj):
+        photo_url = obj.image.url
+        address = ':'.join((settings.NGINX_SERVER, str(settings.NGINX_PORT)))
+        return ''.join(('://'.join(('https', address)), photo_url))
 
 
 class SmsSerializer(serializers.Serializer):
@@ -68,6 +86,7 @@ class BaseRegisterSerializer(serializers.Serializer):
 
 
 class ForgetPasswordSerializer(BaseRegisterSerializer):
+
     def validate(self, attrs):
         phone = attrs.get('phone')
         password = attrs.get('password')
@@ -99,6 +118,7 @@ class ForgetPasswordSerializer(BaseRegisterSerializer):
 
 
 class AdminSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = AdminUser
         fields = '__all__'
@@ -118,13 +138,14 @@ class PatientInfoSerializer(serializers.Serializer):
         ('女', '女'),
         ('未知', '未知')
     )
-    sex = serializers.ChoiceField(choices=USER_SEX_CHOICES, label='性别')
-    age = serializers.IntegerField(label='年龄')
-    username = serializers.CharField(label='真实姓名')
-    id_card = serializers.CharField(label='身份证号码')
+    sex = serializers.ChoiceField(choices=USER_SEX_CHOICES, label='性别', required=False)
+    age = serializers.IntegerField(label='年龄', required=False)
+    username = serializers.CharField(label='真实姓名', required=False)
+    id_card = serializers.CharField(label='身份证号码', required=False)
     nick_name = serializers.CharField(label='昵称', required=False)
     birthday = serializers.DateField(label='出生日期', required=False)
     position = serializers.CharField(label='职业', required=False)
+    user_picture = serializers.URLField(label='患者头像', required=False)
 
 
 class PatientBaseInfoSerializer(serializers.ModelSerializer):
@@ -149,6 +170,7 @@ class PatientVisitSerializer(serializers.ModelSerializer):
 
 
 class AdminUserRegisterSerializer(BaseRegisterSerializer):
+
     def create(self, validated_data):
         # 账户密码加密
         password = validated_data.get('password')
@@ -157,23 +179,32 @@ class AdminUserRegisterSerializer(BaseRegisterSerializer):
 
 
 class AdminUserSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = AdminUser
         fields = '__all__'
 
 
 class DoctorInfoSerializer(serializers.Serializer):
-    username = serializers.CharField(label='真实姓名')
-    hospital = serializers.CharField(label='医院')
+    username = serializers.CharField(label='真实姓名', required=False)
+    hospital = serializers.CharField(label='医院', required=False)
     DEPARTMENT_CHOICES = (
         ('未知', '未知'),
         ('中医', '中医'),
         ('全科', '全科')
     )
-    department = serializers.ChoiceField(choices=DEPARTMENT_CHOICES, label='科室')
-    good_point = serializers.CharField(label='职称')
-    good_at = serializers.CharField(label='擅长方向')
+    department = serializers.ChoiceField(choices=DEPARTMENT_CHOICES, label='科室', required=False)
+    good_point = serializers.CharField(label='职称', required=False)
+    good_at = serializers.CharField(label='擅长方向', required=False)
     summary = serializers.CharField(label='主要成果', required=False)
+    user_picture = serializers.URLField(label='医生头像', required=False)
+    nick_name = serializers.CharField(label='昵称', required=False)
+    image_question = serializers.DecimalField(max_digits=5, decimal_places=2, label='图文咨询价格', required=False)
+    bool_image_question = serializers.BooleanField(label='是否开启图文咨询', required=False)
+    video_question = serializers.DecimalField(max_digits=5, decimal_places=2, label='视频咨询价格', required=False)
+    bool_video_question = serializers.BooleanField(label='是否开启视频咨询', required=False)
+    referral = serializers.DecimalField(max_digits=5, decimal_places=2, label='复诊价格', required=False)
+    bool_referral = serializers.BooleanField(label='是否开启复诊咨询', required=False)
 
 
 class DoctorUpdateSerializer(serializers.ModelSerializer):
@@ -193,8 +224,8 @@ class DoctorRetrieveSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DoctorUser
-        fields = ('id', 'username', 'email', 'phone', 'sex', 'age', 'hospital',
-                  'score', 'good_at', 'good_point', 'department', 'summary',
+        fields = ('id', 'user_picture', 'username', 'email', 'phone', 'sex', 'age',
+                  'hospital', 'score', 'good_at', 'good_point', 'department', 'summary',
                   'image_question', 'bool_image_question', 'video_question',
                   'bool_video_question', 'referral', 'bool_referral',
                   'is_success', 'reason')
@@ -215,21 +246,15 @@ class PatientRetrieveSerializer(serializers.ModelSerializer):
 
 
 class DoctorSerializer(serializers.ModelSerializer):
+    """
+    : 患者查看医生的对应信息字段
+    """
     # user_picture_url = serializers.SerializerMethodField()
     username = serializers.StringRelatedField(label='医生姓名', read_only=True, source='owner.username')
 
     class Meta:
         model = DoctorUser
         fields = ('id', 'nick_name', 'user_picture', 'referral', 'username', 'hospital', 'good_at')
-
-    # def get_user_picture_url(self, obj):
-    #     if not obj.user_picture:
-    #         return None
-
-    #     request = self.context.get('request')
-    #     photo_url = obj.user_picture
-    #     print(type(photo_url), photo_url)
-    #     return photo_url
 
 
 class DoctorSetTimeSerializer(serializers.ModelSerializer):
@@ -304,14 +329,14 @@ class DoctorSetTimeSerializer(serializers.ModelSerializer):
             current_index = new_data_list.index(cur)
 
             if current_index == 0:
-                if (new_data_list[current_index+1]['s']-end_total_seconds) < self.plus_time:
+                if (new_data_list[current_index + 1]['s'] - end_total_seconds) < self.plus_time:
                     raise serializers.ValidationError('时间段间隔不可少于10分钟')
             elif current_index == (len(new_data_list) - 1):
-                if (start_total_seconds - new_data_list[current_index-1]['e']) < self.plus_time:
+                if (start_total_seconds - new_data_list[current_index - 1]['e']) < self.plus_time:
                     raise serializers.ValidationError('时间段间隔不可少于10分钟')
             else:
-                sn = start_total_seconds - new_data_list[current_index-1]['e']
-                ne = new_data_list[current_index+1]['s'] - end_total_seconds
+                sn = start_total_seconds - new_data_list[current_index - 1]['e']
+                ne = new_data_list[current_index + 1]['s'] - end_total_seconds
                 if sn < self.plus_time or ne < self.plus_time:
                     raise serializers.ValidationError('时间段间隔不可少于10分钟')
         return attrs

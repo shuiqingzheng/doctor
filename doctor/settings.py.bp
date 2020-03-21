@@ -227,12 +227,16 @@ sentry_sdk.init(
     send_default_pii=True
 )
 
+# NGINX相关信息
+NGINX_SERVER = os.environ.get('NGINX_SERVER')  # NGINX 服务器IP/域名
+NGINX_PORT = os.environ.get('NGINX_PORT')  # NGINX 监听端口号
+NGINX_ROOT_PATH = ':'.join([NGINX_SERVER, str(NGINX_PORT)])
 
 # 微信相关参数
-APPID = 'wx355b0ef93ef23f9a'
-MCHID = '1328839501'
-APPSECRET = 'fab3b340e0d2964c2ba70908496c021e'
+APPID = os.environ.get('APPID')
+MCHID = os.environ.get('MCHID')
+APPSECRET = os.environ.get('APPSECRET')
 # key设置路径：微信商户平台(pay.weixin.qq.com)-->账户设置-->API安全-->密钥设置
-KEY = '243278132033cc5c47e869c8c34d015e'
+KEY = os.environ.get('KEY')
 OPENID_URL = "https://api.weixin.qq.com/sns/jscode2session"
-NOTIFY_URL = 'http://hdmp.hdzyhosp.com/order/callback/'
+NOTIFY_URL = '/'.join([NGINX_ROOT_PATH, 'order/callback']) 
