@@ -23,7 +23,7 @@ class UploadImageSerializer(serializers.ModelSerializer):
     def get_image_url(self, obj):
         photo_url = obj.image.url
         address = ':'.join((settings.NGINX_SERVER, str(settings.NGINX_PORT)))
-        return ''.join(('://'.join(('https', address)), photo_url))
+        return ''.join((address, photo_url))
 
 
 class SmsSerializer(serializers.Serializer):
