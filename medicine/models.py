@@ -36,21 +36,21 @@ class Medicine(models.Model):
 
     type_three = models.CharField(max_length=200, blank=True, null=True, verbose_name='三级分类', help_text='三级分类')
 
-    officical_name = models.CharField(max_length=200, blank=True, verbose_name='正式名称', help_text='正式名称')
+    officical_name = models.CharField(max_length=200, verbose_name='正式名称', help_text='正式名称')
 
-    product_name = models.CharField(max_length=200, blank=True, verbose_name='商品名', help_text='商品名')
+    product_name = models.CharField(max_length=200, verbose_name='商品名', help_text='商品名')
 
-    standard = models.CharField(max_length=200, blank=True, verbose_name='规格', help_text='规格')
+    standard = models.CharField(max_length=200, verbose_name='规格', help_text='规格')
 
-    price = models.DecimalField(max_digits=8, decimal_places=2, blank=True, verbose_name='价格', help_text='价格')
+    price = models.DecimalField(max_digits=8, decimal_places=2, verbose_name='价格', help_text='价格')
 
-    product_source = models.CharField(max_length=200, blank=True, verbose_name='生产厂家', help_text='生产厂家')
+    product_source = models.CharField(max_length=200, verbose_name='生产厂家', help_text='生产厂家')
 
-    good_for = models.CharField(max_length=200, blank=True, verbose_name='适应症', help_text='适应症')
+    good_for = models.CharField(max_length=200, verbose_name='适应症', help_text='适应症')
 
     detail = RichTextField(verbose_name='说明书')
 
-    product_images = models.CharField(max_length=200, blank=True, verbose_name='药品图片', help_text='药品图片')
+    product_images = models.CharField(max_length=200, blank=True, null=True, verbose_name='药品图片', help_text='药品图片')
 
     # 上传图片限制问题
     # upload_images = models.CharField()
@@ -65,6 +65,29 @@ class Medicine(models.Model):
         verbose_name = '药品'
         verbose_name_plural = verbose_name
         ordering = ['-pk', ]
+
+
+class MedicineImages(models.Model):
+    """
+    药品相关图片
+    """
+    owner = models.ForeignKey(Medicine, on_delete=models.CASCADE, related_name='medicine_images')
+
+    def custom_func_upload_to(instance, filename):
+        return 'upload/medicine/{}'.format(filename)
+
+    image = models.ImageField(upload_to=custom_func_upload_to, verbose_name='药品图片', help_text='药品图片')
+
+    is_first = models.BooleanField(default=False, blank=True, verbose_name='是否作为封面', help_text='是否作为封面')
+
+    def __str__(self):
+        return '{}'.format(self.pk)
+
+    class Meta:
+        db_table = 'medicineimages'
+        verbose_name = '药品图片'
+        verbose_name_plural = verbose_name
+        ordering = ['-pk']
 
 
 class MedicineStock(models.Model):
