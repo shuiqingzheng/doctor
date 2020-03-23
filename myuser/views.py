@@ -254,11 +254,34 @@ class DoctorSetTimeView(BaseSetTimeView):
     permission_classes = [TokenHasScope, DoctorBasePermission]
     required_scopes = ['doctor']
 
+    def get_doctor_obj(self, auth):
+        if not hasattr(auth, 'user'):
+            return
+
+        if not hasattr(auth.user, 'doctor'):
+            return
+
+        try:
+            doctor = DoctorUser.objects.get(owner=auth.user)
+        except DoctorUser.DoesNotExist:
+            doctor = None
+        return doctor
+
+    def get_queryset(self):
+        doctor = self.get_doctor_obj(self.request.auth)
+        if doctor and self.action == 'list':
+            return self.queryset.filter(owner=doctor)
+
+        return self.queryset
+
     def create(self, request, *args, **kwargs):
         """
         - 医生创建预约时间
         """
-        doctor = DoctorUser.objects.get(owner=request.auth.user)
+        doctor = self.get_doctor_obj(request.auth)
+        if not doctor:
+            return Response({'detail': '用户不存在,请检查对应账号'}, status=status.HTTP_404_NOT_FOUND)
+
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(owner=doctor)
