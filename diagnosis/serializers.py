@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from diagnosis.models import DiaDetail, History, Recipe, DiaMedicine, ImageDetail, VideoDetail
-from myuser.models import PatientUser, UploadImage
+from myuser.models import PatientUser
 from myuser.serializers import PatientBaseInfoSerializer
 from medicine.models import Medicine
 from django.conf import settings
@@ -90,10 +90,10 @@ class DiaMedicineSerializer(serializers.ModelSerializer):
         read_only_fields = ['owner', ]
 
     def validate_medicine_name(self, value):
-        try:
-            Medicine.objects.get(officical_name=value)
-        except Medicine.DoesNotExist:
-            raise serializers.ValidationError('{}: 该药品不存在'.format(value))
+        medicine_objs = Medicine.objects.filter(officical_name=value)
+        if not medicine_objs:
+            raise serializers.ValidationError('改药品不存在,请核查对应药品名称...')
+
         return value
 
 
