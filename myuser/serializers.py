@@ -305,10 +305,12 @@ class DoctorSetTimeSerializer(serializers.ModelSerializer):
 
             if not time_objs_list:
                 return attrs
-
+            from django.utils import timezone
             for t in time_objs_list:
-                et = t.get('end_time')
-                st = t.get('start_time')
+                e = t.get('end_time')
+                s = t.get('start_time')
+                et = timezone.localtime(e)
+                st = timezone.localtime(s)
                 et_total_seconds = (et.hour * 60 * 60) + (et.minute * 60) + (et.second)
                 st_total_seconds = (st.hour * 60 * 60) + (st.minute * 60) + (st.second)
 
