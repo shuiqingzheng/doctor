@@ -1,7 +1,6 @@
 from rest_framework import viewsets, status
 # from rest_framework.permissions import AllowAny
 # from rest_framework.exceptions import PermissionDenied
-from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 from django_filters.utils import timezone
 from django.http import QueryDict, Http404
@@ -15,7 +14,7 @@ from diagnosis.serializers import (
     SwaggerPDDSerializer, RecipeRetrieveSerializer, DiaMedicineSerializer,
 )
 from medicine.permissions import TokenHasPermission
-from myuser.models import PatientUser, DoctorUser, UploadImage
+from myuser.models import PatientUser, DoctorUser
 from myuser.permissions import (
     DoctorVisitPermission, DoctorBasePermission, DoctorCreatePermission
 )

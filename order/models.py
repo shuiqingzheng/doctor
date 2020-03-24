@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 # from myuser.models import PatientUser, DoctorUser
 
 
@@ -11,7 +12,7 @@ class Order(models.Model):
 
     doctor_id = models.IntegerField(blank=True, verbose_name='医生id', help_text='医生id')
 
-    create_time = models.DateTimeField(auto_now_add=True)
+    create_time = models.DateTimeField(default=timezone.now, blank=True, null=True, verbose_name='创建日期', help_text='创建日期')
 
     order_num = models.CharField(unique=True, max_length=100, blank=True, verbose_name='订单编号', help_text='订单编号')
 

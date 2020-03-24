@@ -13,7 +13,7 @@ from myuser.serializers import (
     PatientSerializer, DoctorSerializer, PatientInfoSerializer,
     AdminUserSerializer, DoctorInfoSerializer, DoctorRetrieveSerializer,
     DoctorUpdateSerializer, DoctorSetTimeSerializer, PatientRetrieveSerializer,
-    UploadImageSerializer, DoctorUpdateSerializer
+    UploadImageSerializer,
 )
 from diagnosis.models import DiaDetail
 from medicine.permissions import TokenHasPermission
