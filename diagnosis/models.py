@@ -104,7 +104,7 @@ class DiaDetail(Detail):
 
     video_info = models.CharField(max_length=200, blank=True, null=True, verbose_name='复诊视频回放', help_text='复诊视频回放')
 
-    voice_info = models.CharField(max_length=200, blank=True, null=True, verbose_name='患者录音', help_text='患者录音')
+    voice_info = models.URLField(blank=True, null=True, verbose_name='患者录音', help_text='患者录音')
 
     room_number = models.IntegerField(blank=True, null=True, verbose_name='视频房间号', help_text='视频房间号')
 

@@ -7,13 +7,13 @@ from rest_framework.permissions import AllowAny
 from django.db.models import Count, Min
 from django.db import transaction
 from aduser.models import AdminUser
-from myuser.models import PatientUser, DoctorUser, DoctorSetTime, UploadImage
+from myuser.models import PatientUser, DoctorUser, DoctorSetTime, UploadImage, UploadFile
 from myuser.serializers import (
     AdminUserRegisterSerializer, SmsSerializer, ForgetPasswordSerializer,
     PatientSerializer, DoctorSerializer, PatientInfoSerializer,
     AdminUserSerializer, DoctorInfoSerializer, DoctorRetrieveSerializer,
     DoctorUpdateSerializer, DoctorSetTimeSerializer, PatientRetrieveSerializer,
-    UploadImageSerializer,
+    UploadImageSerializer, UploadFileSerializer,
 )
 from diagnosis.models import DiaDetail
 from medicine.permissions import TokenHasPermission
@@ -24,6 +24,13 @@ from oauth2_provider.contrib.rest_framework import TokenHasScope
 
 def index(request, *args, **kwargs):
     return render(request, 'index.html')
+
+
+class UploadFileView(viewsets.ModelViewSet):
+    permission_classes = [TokenHasPermission, ]
+    serializer_class = UploadFileSerializer
+    queryset = UploadFile.objects.order_by('-pk')
+    parser_classes = [MultiPartParser]
 
 
 class UploadImageView(viewsets.ModelViewSet):

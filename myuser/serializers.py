@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from myuser.models import PatientUser, DoctorUser, DoctorSetTime, UploadImage
+from myuser.models import PatientUser, DoctorUser, DoctorSetTime, UploadImage, UploadFile
 from aduser.models import AdminUser
 from django.contrib.auth.hashers import make_password
 from utils.random_number import create_random_number
@@ -24,6 +24,24 @@ class UploadImageSerializer(serializers.ModelSerializer):
         photo_url = obj.image.url
         address = ':'.join((settings.NGINX_SERVER, str(settings.NGINX_PORT)))
         return ''.join((address, photo_url))
+
+
+class UploadFileSerializer(serializers.ModelSerializer):
+    file_url = serializers.SerializerMethodField(read_only=True, label='文件地址')
+
+    class Meta:
+        model = UploadFile
+        fields = '__all__'
+        extra_kwargs = {
+            'file_path': {
+                'write_only': True
+            }
+        }
+
+    def get_file_url(self, obj):
+        file_url = obj.file_path.url
+        address = ':'.join((settings.NGINX_SERVER, str(settings.NGINX_PORT)))
+        return ''.join((address, file_url))
 
 
 class SmsSerializer(serializers.Serializer):
