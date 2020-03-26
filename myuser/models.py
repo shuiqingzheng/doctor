@@ -104,15 +104,15 @@ class DoctorUser(BaseUser):
 
     summary = models.CharField(max_length=255, blank=True, null=True, verbose_name='一句话概括', help_text='一句话概括')
 
-    image_question = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True, verbose_name='图文咨询', help_text='图文咨询')
+    image_question = models.DecimalField(default=0.0, max_digits=5, decimal_places=2, blank=True, null=True, verbose_name='图文咨询', help_text='图文咨询')
 
     bool_image_question = models.BooleanField(default=False, blank=True, verbose_name='是否开启图文咨询', help_text='是否开启图文咨询')
 
-    video_question = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True, verbose_name='视频咨询', help_text='视频咨询')
+    video_question = models.DecimalField(default=0.0, max_digits=5, decimal_places=2, blank=True, null=True, verbose_name='视频咨询', help_text='视频咨询')
 
     bool_video_question = models.BooleanField(default=False, blank=True, verbose_name='是否开启视频咨询', help_text='是否开启视频咨询')
 
-    referral = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True, verbose_name='复诊收费', help_text='复诊收费')
+    referral = models.DecimalField(default=0.0, max_digits=5, decimal_places=2, blank=True, null=True, verbose_name='复诊收费', help_text='复诊收费')
 
     bool_referral = models.BooleanField(default=False, blank=True, verbose_name='是否开启复诊收费', help_text='是否开启复诊收费')
 
