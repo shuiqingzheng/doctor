@@ -23,11 +23,11 @@ class DiaDetailSerializer(serializers.ModelSerializer):
     business_state = serializers.SerializerMethodField(label='状态')
 
     username = serializers.SerializerMethodField()
-    order_time = serializers.DateTimeField(format=settings.DATETIME_FORMAT)
+    order_time = serializers.DateTimeField(format=settings.DATETIME_TOTAL_FORMAT)
 
     class Meta:
         model = DiaDetail
-        fields = ('id', 'username', 'patient_main', 'order_time', 'business_state', 'voice_info', 'image_one', 'image_two', 'image_three', 'room_number', 'is_video', 'patient_id')
+        fields = ('id', 'username', 'patient_main', 'order_time', 'business_state', 'voice_info', 'image_one', 'image_two', 'image_three', 'room_number', 'is_video', 'patient_id', 'doctor_id')
 
     def get_business_state(self, obj):
         o = obj.order_question
