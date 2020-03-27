@@ -66,7 +66,8 @@ class OpenIDView(views.APIView):
         if not response_msg.get('openid', None):
             return Response({'detail': '微信官方返回的错误码errcode:{}'.format(response_msg.get('errcode'))}, status=status.HTTP_400_BAD_REQUEST)
         openid = response_msg['openid']
-        return Response({'openid': openid})
+        session_key = response_msg['session_key']
+        return Response({'openid': openid, 'session_key': session_key})
 
 
 class PayView(generics.GenericAPIView):
