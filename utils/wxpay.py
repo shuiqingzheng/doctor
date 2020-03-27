@@ -37,6 +37,8 @@ def generate_sign(param):
     # 拼接商户KEY
     stringSignTemp = stringA + "key=" + KEY
 
+    print('------操作-----', stringSignTemp, '===拼接操作==')
+
     # md5加密
     hash_md5 = hashlib.md5(stringSignTemp.encode('utf-8'))
     sign = hash_md5.hexdigest().upper()
@@ -74,7 +76,7 @@ def generate_bill(pay_order_num, fee, openid):
         "body": 'test1',
         "out_trade_no": pay_order_num,
         "total_fee": fee,
-        "spbill_create_ip": '127.0.0.1',
+        "spbill_create_ip": '39.99.225.130',
         "notify_url": NOTIFY_URL,
         "trade_type": 'JSAPI',
         "openid": openid,
@@ -90,12 +92,11 @@ def generate_bill(pay_order_num, fee, openid):
             timeStamp = str(int(time.time()))
             # 根据文档，六个参数，否则app提示签名验证失败，https://pay.weixin.qq.com/wiki/doc/api/app/app.php?chapter=9_12
             data = {
-                "appid": APPID,
-                "partnerid": MCHID,
-                "prepayid": prepay_id,
-                "package": "Sign=WXPay",
-                "noncestr": nonce_str,
-                "timestamp": timeStamp,
+                "appId": APPID,
+                "signType": "MD5",
+                "package": "prepay_id={}".format(prepay_id),
+                "nonceStr": nonce_str,
+                "timeStamp": timeStamp,
             }
             paySign = generate_sign(data)
             data["paySign"] = paySign
