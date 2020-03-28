@@ -12,6 +12,8 @@ from diagnosis.serializers import (
     DiaDetailSerializer, VideoDetailSerializer, ImageDetailSerializer
 )
 from oauth2_provider.contrib.rest_framework import TokenHasScope
+from utils.constants import nonce_str_dict
+import xmltodict
 
 
 class QuestionOrderView(viewsets.ModelViewSet):
@@ -95,5 +97,22 @@ class CallBackView(generics.GenericAPIView):
     serializer_class = CallBackSerializer
 
     def post(self, request, *args, **kwargs):
-        print('=======callback=======')
-        return Response({})
+        msg = request.data
+        xmlmsg = xmltodict.parse(msg)
+
+        return_code = xmlmsg['xml']['return_code']
+
+        if return_code == 'FAIL':
+            return Response({'detail': '微信官方返回错误'})
+
+        elif return_code == 'SUCCESS':
+            out_trade_no = xmlmsg['xml']['out_trade_no']  # 订单号
+            current_no = nonce_str_dict.get('{}'.format(out_trade_no))
+            if xmlmsg['xml']['nonce_str'] != current_no:
+                return Response({'detail': '订单号不匹配'})
+
+            order = QuestionOrder.objects.get(order_num=out_trade_no)
+            order.pay_state = '已支付'
+            order.business_state = '待会诊'
+            order.save()
+            return Response({'detail': '修改成功'})

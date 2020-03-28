@@ -19,10 +19,11 @@ class Order(models.Model):
     order_price = models.DecimalField(max_digits=8, decimal_places=2, blank=True, verbose_name='订单价格', help_text='订单价格')
 
     PAY_CHOICES = (
-        ('已完成', '已完成'),
-        ('已支付', '已支付'),
         ('未支付', '未支付'),
-        ('已配送', '已配送')
+        ('已支付', '已支付'),
+        ('已配送', '已配送'),
+        ('申请退费', '申请退费'),
+        ('已退费', '已退费'),
     )
     pay_state = models.CharField(choices=PAY_CHOICES, max_length=4, blank=True, verbose_name='支付状态', help_text='支付状态')
 
@@ -43,9 +44,9 @@ class QuestionOrder(Order):
     question_order_form = models.CharField(choices=FORM_CHOICES, blank=True, max_length=4, verbose_name='咨询类型', help_text='咨询类型')
 
     BUSINESS_CHOICES = (
-        ('未支付', '未支付'),
-        ('已支付', '已支付'),
-        ('已完成', '已完成')
+        ('待支付', '待支付'),
+        ('待会诊', '待会诊'),
+        ('会诊完成', '会诊完成')
     )
     business_state = models.CharField(choices=BUSINESS_CHOICES, max_length=4, blank=True, verbose_name='业务状态', help_text='业务状态')
 

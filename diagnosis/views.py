@@ -123,7 +123,7 @@ class DiaDetailPatientView(viewsets.ModelViewSet):
             'order_num': create_order_number(QuestionOrder),
             'pay_state': '未支付',   # 订单状态
             'question_order_form': '复诊',
-            'business_state': '已支付',   # 复诊的状态
+            'business_state': '待支付',   # 复诊的状态
             'patient_id': patient.id,
             'doctor_id': doctor.id
         }
@@ -214,7 +214,7 @@ class HistoryView(viewsets.ModelViewSet):
         s.is_valid(raise_exception=True)
         s.save()
 
-        diadetail.order_question.business_state = '已完成'
+        diadetail.order_question.business_state = '会诊完成'
         diadetail.order_question.save()
 
         # 同时更新当前医生/患者的复诊次数

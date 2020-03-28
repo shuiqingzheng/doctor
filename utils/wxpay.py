@@ -6,6 +6,7 @@ import time
 import random
 import string
 from django.conf import settings
+from utils.constants import nonce_str_dict
 
 
 requests.DEFAULT_RETRIES = 5
@@ -66,6 +67,7 @@ def generate_bill(pay_order_num, fee, openid):
     """
     url = "https://api.mch.weixin.qq.com/pay/unifiedorder"
     nonce_str = generate_randomStr()        # 订单中加nonce_str字段记录（回调判断使用）
+    nonce_str_dict['{}'.format(pay_order_num)] = nonce_str
 
     param = {
         "appid": APPID,

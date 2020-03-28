@@ -65,6 +65,7 @@ class SwaggerPDDSerializer(serializers.Serializer):
 
 
 class HistorySerializer(serializers.ModelSerializer):
+    history_create_time = serializers.DateTimeField(format=settings.DATETIME_TOTAL_FORMAT, required=False)
 
     class Meta:
         model = History
