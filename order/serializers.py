@@ -14,7 +14,7 @@ class OrderQuestionOrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = QuestionOrder
-        exclude = ['patient_id', 'doctor_id']
+        exclude = ['patient_id', 'doctor_id', 'out_trade_no']
 
 
 class PaySerializer(serializers.Serializer):

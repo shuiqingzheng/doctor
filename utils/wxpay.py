@@ -6,7 +6,7 @@ import time
 import random
 import string
 from django.conf import settings
-from utils.constants import nonce_str_dict
+from order.models import QuestionOrder
 
 
 requests.DEFAULT_RETRIES = 5
@@ -67,13 +67,20 @@ def generate_bill(pay_order_num, fee, openid):
     """
     url = "https://api.mch.weixin.qq.com/pay/unifiedorder"
     nonce_str = generate_randomStr()        # 订单中加nonce_str字段记录（回调判断使用）
-    nonce_str_dict['{}'.format(pay_order_num)] = nonce_str
+    # nonce_str_dict['{}'.format(pay_order_num)] = nonce_str
+    try:
+        q_order = QuestionOrder.objects.get(order_num=pay_order_num)
+    except QuestionOrder.DoesNotExist:
+        return {'detail': '该订单号不存在'}
+    else:
+        q_order.nonce_str = nonce_str
+        q_order.save()
 
     param = {
         "appid": APPID,
         "mch_id": MCHID,
         "nonce_str": nonce_str,
-        "body": 'test1',
+        "body": 'WX_HANDIAN',
         "out_trade_no": pay_order_num,
         "total_fee": fee,
         "spbill_create_ip": '39.99.225.130',

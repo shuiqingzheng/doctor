@@ -5,6 +5,8 @@ from aduser.models import AdminUser
 
 class UploadFile(models.Model):
     def custom_func_upload_to(instance, filename):
+        if len(filename) >= 100:
+            filename = filename[:-50:-1][::-1]
         return 'upload/file/{}'.format(filename)
 
     file_path = models.FileField(upload_to=custom_func_upload_to, verbose_name='文件', help_text='文件')
@@ -21,6 +23,8 @@ class UploadFile(models.Model):
 
 class UploadImage(models.Model):
     def custom_func_upload_to(instance, filename):
+        if len(filename) >= 100:
+            filename = filename[:-50:-1][::-1]
         return 'upload/images/{}'.format(filename)
 
     image = models.ImageField(upload_to=custom_func_upload_to, verbose_name='图片', help_text='图片')

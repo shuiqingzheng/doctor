@@ -7,6 +7,7 @@ class Order(models.Model):
     """
     订单：
     """
+    nonce_str = models.CharField(max_length=200, blank=True, null=True, verbose_name='随机字符串', help_text='随机字符串')
     # 问题： 设计外键合适还是直接保存ID
     patient_id = models.IntegerField(blank=True, verbose_name='患者id', help_text='患者id')
 

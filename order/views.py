@@ -1,9 +1,9 @@
-from django.http import Http404
+from django.http import Http404, JsonResponse
 from rest_framework import views, generics, status, viewsets
 from rest_framework.response import Response
 from utils.wxopenid import get_openid
 from order.serializers import (
-    PaySerializer, CallBackSerializer, OrderQuestionOrderSerializer,
+    PaySerializer, OrderQuestionOrderSerializer,
 )
 from order.models import QuestionOrder
 from celery_tasks.tasks import wx_pay
@@ -12,7 +12,6 @@ from diagnosis.serializers import (
     DiaDetailSerializer, VideoDetailSerializer, ImageDetailSerializer
 )
 from oauth2_provider.contrib.rest_framework import TokenHasScope
-from utils.constants import nonce_str_dict
 import xmltodict
 
 
@@ -87,32 +86,34 @@ class PayView(generics.GenericAPIView):
         # 异步向微信发起统一支付请求
         pay = wx_pay.delay('{}'.format(question_order.order_num), price_fee, openid)
         return_msg = pay.get()
+        if not return_msg:
+            return Response({'detail': '未知错误, 支付失败'}, status=status.HTTP_400_BAD_REQUEST)
+
         if return_msg.get('detail'):
             return Response(return_msg, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(return_msg)
 
 
-class CallBackView(generics.GenericAPIView):
-    serializer_class = CallBackSerializer
+def callback(request, *args, **kwargs):
+    """
+    微信统一下单的回调接口
+    """
+    msg = request.body.decode('utf-8')
+    xmlmsg = xmltodict.parse(msg)
 
-    def post(self, request, *args, **kwargs):
-        msg = request.data
-        xmlmsg = xmltodict.parse(msg)
+    return_code = xmlmsg['xml']['return_code']
 
-        return_code = xmlmsg['xml']['return_code']
+    if return_code == 'FAIL':
+        return JsonResponse({'detail': '微信官方返回错误'})
 
-        if return_code == 'FAIL':
-            return Response({'detail': '微信官方返回错误'})
+    elif return_code == 'SUCCESS':
+        out_trade_no = xmlmsg['xml']['out_trade_no']  # 订单号
+        q_order = QuestionOrder.objects.get(order_num=out_trade_no)
+        if xmlmsg['xml']['nonce_str'] != q_order.nonce_str:
+            return JsonResponse({'detail': '订单号不匹配'})
 
-        elif return_code == 'SUCCESS':
-            out_trade_no = xmlmsg['xml']['out_trade_no']  # 订单号
-            current_no = nonce_str_dict.get('{}'.format(out_trade_no))
-            if xmlmsg['xml']['nonce_str'] != current_no:
-                return Response({'detail': '订单号不匹配'})
-
-            order = QuestionOrder.objects.get(order_num=out_trade_no)
-            order.pay_state = '已支付'
-            order.business_state = '待会诊'
-            order.save()
-            return Response({'detail': '修改成功'})
+        q_order.pay_state = '已支付'
+        q_order.business_state = '待会诊'
+        q_order.save()
+        return JsonResponse({'detail': '修改成功'})
