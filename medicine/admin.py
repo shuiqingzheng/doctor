@@ -39,8 +39,29 @@ class ImagesInline(admin.TabularInline):
     template = 'medicine-image.html'
 
 
+class TypeForm(forms.ModelForm):
+    class Meta:
+        widgets = {
+            'type_one': forms.Select(),
+            'type_two': forms.Select(),
+            'type_three': forms.Select()
+        }
+
+
 @admin.register(Medicine)
 class MedicineAdmin(admin.ModelAdmin):
+    form = TypeForm
+    change_form_template = 'medicine-type.html'
+
+    # 下拉联动
+    # def formfield_for_dbfield(self, db_field, request, **kwargs):
+    #     first_objs = MedicineType.objects.filter(father_id=None)
+
+    #     if db_field.name == "type_one":
+    #         kwargs['choices'] = (obj.type_name for obj in first_objs)
+
+    #     return super().formfield_for_dbfield(db_field, request, **kwargs)
+
     list_display = ('pk', 'officical_name', 'product_name', 'type_one', 'type_two', 'type_three', 'product_state')
     search_fields = ('pk', 'officical_name', 'product_name', 'type_one', 'type_two', 'type_three')
     inlines = [

@@ -1,0 +1,53 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls static admin_modify %}
+{% block admin_change_form_document_ready %}
+    <script type="text/javascript"
+            id="django-admin-form-add-constants"
+            src="{% static 'admin/js/change_form.js' %}"
+            {% if adminform and add %}
+                data-model-name="{{ opts.model_name }}"
+            {% endif %}>
+    </script>
+
+    <script type="text/javascript">
+        (function($) {
+            $('#id_type_two').change(function() {
+                let two = $('#id_type_two').val();
+                $.get('/choose_two_and_three/', {"tp_name": two }, function(a_info) {
+                    var area_info = $('#id_type_three').empty().append('<option value>' + '---------' + '</option>');
+                    $.each(a_info, function(i, area) {
+                        area_info.append('<option value="' + area + '">' + area + '</option>')
+                    });
+                    {% if change %}
+                        $("#id_type_three").find("option:contains({{ original.type_three }})").attr('selected', true);
+                    {% endif %}
+                });
+            });
+
+            $('#id_type_one').change(function() {
+                let one = $('#id_type_one').val();
+                $.get('/choose_two_and_three/', {'tp_name': one}, function(t_info) {
+                    var two_info = $('#id_type_two').empty().append('<option value>' + '---------' + '</option>');
+                    $.each(t_info, function(i, two) {
+                        two_info.append('<option value="' + two + '">' + two + '</option>')
+                    });
+                    {% if change %}
+                        $("#id_type_two").find("option:contains({{ original.type_two }})").attr('selected', true);
+                        $("#id_type_two").trigger("change");
+                    {% endif %}
+                });
+            });
+
+            $.get('/choose_one/', function(o_info) {
+                var one_info = $('#id_type_one').empty().append('<option value>' + '---------' + '</option>');
+                $.each(o_info, function(i, one) {
+                    one_info.append('<option value="' + one + '">' + one + '</option>')
+                });
+                {% if change %}
+                    $("#id_type_one").find("option:contains({{ original.type_one }})").attr('selected', true);
+                    $("#id_type_one").trigger("change");
+                {% endif %}
+            });
+        })(django.jQuery);
+    </script>
+{% endblock admin_change_form_document_ready %}

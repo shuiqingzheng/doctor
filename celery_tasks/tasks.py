@@ -18,9 +18,9 @@ def register_task(phone, sms_code):
         'TemplateParam': '{"code":"%s"}' % sms_code
     }
     # 线上
-    # response = aliyun_send_sms_common_api(action, query_param_dict)
+    response = aliyun_send_sms_common_api(action, query_param_dict)
     # 开发
-    response = '{"Message":"OK","RequestId":"4B1A507E-A5D9-435C-A3A2-AAAA83832FDD","BizId":"381423182509765473^0","Code":"OK"}'
+    # response = '{"Message":"OK","RequestId":"4B1A507E-A5D9-435C-A3A2-AAAA83832FDD","BizId":"381423182509765473^0","Code":"OK"}'
     return response
 
 

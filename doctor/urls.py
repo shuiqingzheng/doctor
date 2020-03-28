@@ -18,6 +18,7 @@ from django.urls import path, include
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+from medicine.views import choose_one, choose_two_and_three
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -33,6 +34,8 @@ urlpatterns = [
     path('api-docs/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 
     path('admin/', admin.site.urls),
+    path('choose_one/', choose_one),
+    path('choose_two_and_three/', choose_two_and_three),
 
     path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
 

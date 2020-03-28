@@ -37,8 +37,6 @@ def generate_sign(param):
     # 拼接商户KEY
     stringSignTemp = stringA + "key=" + KEY
 
-    print('------操作-----', stringSignTemp, '===拼接操作==')
-
     # md5加密
     hash_md5 = hashlib.md5(stringSignTemp.encode('utf-8'))
     sign = hash_md5.hexdigest().upper()

@@ -1,4 +1,5 @@
 from django_filters.rest_framework import DjangoFilterBackend
+from django.http import JsonResponse
 from rest_framework import viewsets, status
 from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
@@ -9,6 +10,23 @@ from medicine.serializers import (
 )
 from medicine.permissions import TokenHasPermission
 from oauth2_provider.contrib.rest_framework import TokenHasScope
+
+
+def choose_one(request):
+    one_objs = MedicineType.objects.filter(father_id=None)
+    name_list = [obj.type_name for obj in one_objs]
+    return JsonResponse(name_list, safe=False)
+
+
+def choose_two_and_three(request):
+    name = request.GET.get('tp_name')
+    if not name:
+        return JsonResponse([], safe=False)
+
+    m = MedicineType.objects.get(type_name=name)
+    two_objs = MedicineType.objects.filter(father_id=m.id)
+    name_list = [obj.type_name for obj in two_objs]
+    return JsonResponse(name_list, safe=False)
 
 
 class MedicineStockView(viewsets.ModelViewSet):
