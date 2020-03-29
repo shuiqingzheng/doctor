@@ -58,7 +58,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -237,7 +237,9 @@ APPSECRET = 'fab3b340e0d2964c2ba70908496c021e'
 KEY = '243278132033cc5c47e869c8c34d015e'
 OPENID_URL = "https://api.weixin.qq.com/sns/jscode2session"
 # NOTIFY_URL = 'http://127.0.0.1:9000/order/callback/'
-NOTIFY_URL = 'https://hdmp.hdzyhosp.com/order/callback'
+NOTIFY_URL = 'https://hdmp.hdzyhosp.com/order/callback/'
 
-# NOTIFY_URL = '/'.join([NGINX_PATH, 'order/callback'])
+# NGINX_ROOT_PATH = ':'.join([NGINX_SERVER, str(NGINX_PORT)])
+# NOTIFY_URL = '/'.join([NGINX_ROOT_PATH, 'order/callback/'])
+# print(NOTIFY_URL)
 # print(NOTIFY_URL)

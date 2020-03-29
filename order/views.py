@@ -14,6 +14,11 @@ from diagnosis.serializers import (
 from oauth2_provider.contrib.rest_framework import TokenHasScope
 import xmltodict
 
+try:
+    import xml.etree.cElementTree as ET
+except ImportError:
+    import xml.etree.ElementTree as ET
+
 
 class QuestionOrderView(viewsets.ModelViewSet):
     permission_classes = [TokenHasScope, ]
@@ -99,18 +104,22 @@ def callback(request, *args, **kwargs):
     """
     微信统一下单的回调接口
     """
-    msg = request.body.decode('utf-8')
-    xmlmsg = xmltodict.parse(msg)
+    msg = request.body
+    tree = ET.ElementTree(msg)
+    root = tree.getroot()
+    xmlmsg = xmltodict.parse(root.decode('utf-8'))
+    xml_info = xmlmsg.get('xml')
+    if not xml_info:
+        xml_info = xmlmsg.get('root')
 
-    return_code = xmlmsg['xml']['return_code']
+    return_code = xml_info['return_code']
 
     if return_code == 'FAIL':
         return JsonResponse({'detail': '微信官方返回错误'})
-
     elif return_code == 'SUCCESS':
-        out_trade_no = xmlmsg['xml']['out_trade_no']  # 订单号
+        out_trade_no = xml_info['out_trade_no']  # 订单号
         q_order = QuestionOrder.objects.get(order_num=out_trade_no)
-        if xmlmsg['xml']['nonce_str'] != q_order.nonce_str:
+        if xml_info['nonce_str'] != q_order.nonce_str:
             return JsonResponse({'detail': '订单号不匹配'})
 
         q_order.pay_state = '已支付'
