@@ -105,6 +105,9 @@ def callback(request, *args, **kwargs):
     微信统一下单的回调接口
     """
     msg = request.body
+    with open('./logs.txt', 'w') as file:
+        file.write(msg.decode('utf-8'))
+
     tree = ET.ElementTree(msg)
     root = tree.getroot()
     xmlmsg = xmltodict.parse(root.decode('utf-8'))
