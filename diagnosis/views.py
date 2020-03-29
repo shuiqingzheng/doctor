@@ -45,7 +45,7 @@ class DiaDetailView(viewsets.ModelViewSet):
             if hasattr(token.user, 'patient'):
                 return self.queryset.filter(patient_id=token.user.patient.id)
             if hasattr(token.user, 'doctor'):
-                return self.queryset.filter(doctor_id=token.user.doctor.id)
+                return self.queryset.filter(doctor_id=token.user.doctor.id, order_question__business_state='待会诊')
 
         return self.queryset
 
