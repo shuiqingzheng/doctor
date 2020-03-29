@@ -198,6 +198,8 @@ SWAGGER_SETTINGS = {
     },
 }
 
+CODE_EXPIRED = 10 * 60
+
 # settings.py
 CELERY_TASK_SERIALIZER = 'pickle'
 CELERY_RESULT_SERIALIZER = 'pickle'

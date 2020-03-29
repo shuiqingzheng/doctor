@@ -198,6 +198,8 @@ SWAGGER_SETTINGS = {
     },
 }
 
+CODE_EXPIRED = 10 * 60
+
 REDIS_HOST = os.environ.get('REDIS_HOST')
 REDIS_PORT = os.environ.get('REDIS_PORT')
 REDIS_DB = os.environ.get('REDIS_CODE_DB')
@@ -240,4 +242,4 @@ APPSECRET = os.environ.get('APPSECRET')
 # key设置路径：微信商户平台(pay.weixin.qq.com)-->账户设置-->API安全-->密钥设置
 KEY = os.environ.get('KEY')
 OPENID_URL = "https://api.weixin.qq.com/sns/jscode2session"
-NOTIFY_URL = '/'.join([NGINX_ROOT_PATH, 'order/callback/'])
+NOTIFY_URL = '/'.join([NGINX_SERVER, 'order/callback/'])

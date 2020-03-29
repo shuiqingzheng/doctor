@@ -1,4 +1,5 @@
 from django.http import Http404, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework import views, generics, status, viewsets
 from rest_framework.response import Response
 from utils.wxopenid import get_openid
@@ -100,12 +101,14 @@ class PayView(generics.GenericAPIView):
         return Response(return_msg)
 
 
+@csrf_exempt
 def callback(request, *args, **kwargs):
     """
     微信统一下单的回调接口
     """
     msg = request.body
     with open('./logs.txt', 'w') as file:
+        file.write('-------')
         file.write(msg.decode('utf-8'))
 
     tree = ET.ElementTree(msg)

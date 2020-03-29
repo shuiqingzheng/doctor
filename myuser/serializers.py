@@ -55,7 +55,7 @@ class SmsSerializer(serializers.Serializer):
         # 1.2 异步发送
         sms_code = create_random_number()
         key_name = '_'.join([phone, 'sms'])
-        redis_conn.setex(key_name, 5 * 60, sms_code)
+        redis_conn.setex(key_name, settings.CODE_EXPIRED, sms_code)
         result = register_task.delay(phone, sms_code)
 
         import json
