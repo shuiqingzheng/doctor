@@ -36,5 +36,5 @@ class MedicineOrderAdmin(BaseOrderAdmin, admin.ModelAdmin):
     search_fields = ('pk', 'order_num', 'pay_state', 'medicine_order_form')
     fieldsets = (
         (None, {'fields': ['patient_id', 'doctor_id', 'order_num',
-         'order_price', 'pay_state', 'medicine_order_form', 'medicine_name']}),
+         'order_price', 'pay_state', 'medicine_order_form']}),
     )

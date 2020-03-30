@@ -25,9 +25,9 @@ def register_task(phone, sms_code):
 
 
 @app.task(name='wx_pay')
-def wx_pay(order_num, fee, openid):
+def wx_pay(order_num, fee, openid, order_type):
     """
     微信支付
     """
-    data = generate_bill(order_num, fee, openid)
+    data = generate_bill(order_num, fee, openid, order_type)
     return data

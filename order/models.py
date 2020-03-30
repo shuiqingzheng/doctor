@@ -1,6 +1,5 @@
 from django.db import models
 from django.utils import timezone
-# from myuser.models import PatientUser, DoctorUser
 
 
 class Order(models.Model):
@@ -71,8 +70,6 @@ class MedicineOrder(Order):
         ('处方', '处方'),
     )
     medicine_order_form = models.CharField(choices=FORM_CHOICES, blank=True, max_length=4, verbose_name='类型', help_text='类型')
-
-    medicine_name = models.CharField(max_length=200, blank=True, verbose_name='药品名称', help_text='药品名称')
 
     def __str__(self):
         return '{}'.format(self.pk)

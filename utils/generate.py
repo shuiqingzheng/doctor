@@ -22,16 +22,22 @@ def generate_current_day():
     return current
 
 
-def create_order_number(model_name):
+def create_order_number(model_name, tps):
+    """
+    : 创建唯一的订单号
+    : param model_name:Model名称
+    : param tps:前缀(保证数据库中的订单唯一)
+    => 例子: 'prep_202003300001' & 'orde_202003300005'
+    """
     # 创建订单编号
     s_current_date = generate_current_day()
     # 查询当天的订单编号最大值
-    max_questionnaire_id = model_name.objects.filter(order_num__startswith=s_current_date).aggregate(Max('order_num'))
+    max_questionnaire_id = model_name.objects.filter(order_num__startswith=tps+s_current_date).aggregate(Max('order_num'))
 
     max_id = max_questionnaire_id.get('order_num__max', None)
 
     if max_id:
-        serial = '{}'.format(int(max_id) + 1)
+        serial = '{}'.format(int(max_id[5:]) + 1)
     else:
         serial = create_today_number()
 

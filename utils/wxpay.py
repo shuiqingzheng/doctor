@@ -6,7 +6,7 @@ import time
 import random
 import string
 from django.conf import settings
-from order.models import QuestionOrder
+from order.models import QuestionOrder, MedicineOrder
 
 
 requests.DEFAULT_RETRIES = 5
@@ -59,22 +59,29 @@ def send_xml_request(url, param):
 
 
 # 统一下单
-def generate_bill(pay_order_num, fee, openid):
+def generate_bill(pay_order_num, fee, openid, order_type):
     """
     pay_order_num:支付单号，只能使用一次，不可重复支付
     fee:总价格(单位分)
     openid:对应的openid
+    order_type: ('question', 'medicine')
     """
     url = "https://api.mch.weixin.qq.com/pay/unifiedorder"
     nonce_str = generate_randomStr()        # 订单中加nonce_str字段记录（回调判断使用）
     # nonce_str_dict['{}'.format(pay_order_num)] = nonce_str
-    try:
-        q_order = QuestionOrder.objects.get(order_num=pay_order_num)
-    except QuestionOrder.DoesNotExist:
-        return {'detail': '该订单号不存在'}
+    if order_type == 'question':
+        try:
+            _order = QuestionOrder.objects.get(order_num=pay_order_num)
+        except QuestionOrder.DoesNotExist:
+            return {'detail': '该咨询订单号不存在'}
     else:
-        q_order.nonce_str = nonce_str
-        q_order.save()
+        try:
+            _order = MedicineOrder.objects.get(order_num=pay_order_num)
+        except QuestionOrder.DoesNotExist:
+            return {'detail': '该处方订单号不存在'}
+
+    _order.nonce_str = nonce_str
+    _order.save()
 
     param = {
         "appid": APPID,

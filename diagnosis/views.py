@@ -24,8 +24,8 @@ from oauth2_provider.contrib.rest_framework import TokenHasScope
 from utils.swagger_response import ResponseSuccessSerializer
 from utils.generate import create_order_number
 from myuser.permissions import PatientBasePermission
-from order.serializers import QuestionOrderSerializer
-from order.models import QuestionOrder
+from order.serializers import QuestionOrderSerializer, MedicineOrderSerializer
+from order.models import QuestionOrder, MedicineOrder
 
 
 class DiaDetailView(viewsets.ModelViewSet):
@@ -117,10 +117,10 @@ class DiaDetailPatientView(viewsets.ModelViewSet):
         except PatientUser.DoesNotExist:
             raise ValueError('不存在')
 
-        # TODO-支付接口更改状态 pay_state
+        # 支付接口更改状态 pay_state
         # 订单默认信息
         order_default_info = {
-            'order_num': create_order_number(QuestionOrder),
+            'order_num': 'orde_' + create_order_number(QuestionOrder, 'orde_'),
             'pay_state': '未支付',   # 订单状态
             'question_order_form': '复诊',
             'business_state': '待支付',   # 复诊的状态
@@ -295,15 +295,41 @@ class RecipeView(viewsets.ModelViewSet):
         """
         - 医生为患者根据病历ID进行创建处方
         """
+        data = request.data
         try:
             history = History.objects.get(pk=history_id)
         except History.DoesNotExist:
             return Response({'detail': '病历未创建'}, status=status.HTTP_404_NOT_FOUND)
         else:
-            recipe_serializer = RecipeSerializer(data=request.data)
-            recipe_serializer.is_valid(raise_exception=True)
-            recipe = recipe_serializer.save()
-            # TODO 异步生成药品订单
-            history.recipe = recipe
-            history.save()
+            # 生成药品订单
+            order_info = {
+                'order_num': 'prep_' + create_order_number(MedicineOrder, 'prep_'),
+                'pay_state': '未支付',   # 订单状态
+                'medicine_order_form': '处方',
+                'patient_id': history.patient_id,
+                'doctor_id': history.doctor_id,
+                'order_price': data.get('total_price')
+            }
+
+            with transaction.atomic():
+                point = transaction.savepoint()
+                try:
+                    m_order = MedicineOrderSerializer(data=order_info)
+                    m_order.is_valid(raise_exception=True)
+                    order = m_order.save()
+                    recipe_serializer = RecipeSerializer(data=data)
+                    recipe_serializer.is_valid(raise_exception=True)
+                    recipe = recipe_serializer.save()
+
+                    # 生成药品订单
+                    recipe.order = order
+                    recipe.save()
+
+                    history.recipe = recipe
+                    history.save()
+                except Exception as e:
+                    transaction.savepoint_rollback(point)
+                    raise e
+                transaction.savepoint_commit(point)
+
         return Response({'detail': '处方提交成功'})

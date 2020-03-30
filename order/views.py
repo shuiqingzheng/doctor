@@ -4,9 +4,9 @@ from rest_framework import views, generics, status, viewsets
 from rest_framework.response import Response
 from utils.wxopenid import get_openid
 from order.serializers import (
-    PaySerializer, OrderQuestionOrderSerializer,
+    PaySerializer, OrderQuestionOrderSerializer, OrderMedicineOrderSerializer
 )
-from order.models import QuestionOrder
+from order.models import QuestionOrder, MedicineOrder
 from celery_tasks.tasks import wx_pay
 from myuser.models import PatientUser
 from diagnosis.serializers import (
@@ -21,10 +21,11 @@ except ImportError:
     import xml.etree.ElementTree as ET
 
 
-class QuestionOrderView(viewsets.ModelViewSet):
+class MedicineOrderView(viewsets.ModelViewSet):
     permission_classes = [TokenHasScope, ]
     required_scopes = ['patient']
-    serializer_class = OrderQuestionOrderSerializer
+    serializer_class = OrderMedicineOrderSerializer
+    model_name = MedicineOrder
 
     def get_queryset(self):
         auth = self.request.auth
@@ -35,9 +36,29 @@ class QuestionOrderView(viewsets.ModelViewSet):
                 patient = PatientUser.objects.get(owner=user)
             except PatientUser.DoesNotExist:
                 raise Http404
-            return QuestionOrder.objects.filter(patient_id=patient.id).order_by('-create_time')
+            return self.model_name.objects.filter(patient_id=patient.id).order_by('-create_time')
         else:
-            return QuestionOrder.objects.order_by('-create_time')
+            return self.model_name.objects.order_by('-create_time')
+
+
+class QuestionOrderView(viewsets.ModelViewSet):
+    permission_classes = [TokenHasScope, ]
+    required_scopes = ['patient']
+    serializer_class = OrderQuestionOrderSerializer
+    model_name = QuestionOrder
+
+    def get_queryset(self):
+        auth = self.request.auth
+
+        if hasattr(auth, 'user'):
+            user = auth.user
+            try:
+                patient = PatientUser.objects.get(owner=user)
+            except PatientUser.DoesNotExist:
+                raise Http404
+            return self.model_name.objects.filter(patient_id=patient.id).order_by('-create_time')
+        else:
+            return self.model_name.objects.order_by('-create_time')
 
     def retrieve(self, request, *args, **kwargs):
         """
@@ -87,10 +108,14 @@ class PayView(generics.GenericAPIView):
         s.is_valid(raise_exception=True)
         order_id = s.validated_data['order_id']
         openid = s.validated_data['openid']
-        question_order = QuestionOrder.objects.get(id=order_id)
-        price_fee = int(question_order.order_price * 100)
+        order_type = s.validated_data['order_type']
+        if order_type == 'question':
+            order = QuestionOrder.objects.get(id=order_id)
+        else:
+            order = MedicineOrder.objects.get(id=order_id)
+        price_fee = int(order.order_price * 100)
         # 异步向微信发起统一支付请求
-        pay = wx_pay.delay('{}'.format(question_order.order_num), price_fee, openid)
+        pay = wx_pay.delay('{}'.format(order.order_num), price_fee, openid, order_type)
         return_msg = pay.get()
         if not return_msg:
             return Response({'detail': '未知错误, 支付失败'}, status=status.HTTP_400_BAD_REQUEST)
@@ -120,11 +145,16 @@ def callback(request, *args, **kwargs):
         return JsonResponse({'detail': '微信官方返回错误'})
     elif return_code == 'SUCCESS':
         out_trade_no = xml_info['out_trade_no']  # 订单号
-        q_order = QuestionOrder.objects.get(order_num=out_trade_no)
-        if xml_info['nonce_str'] != q_order.nonce_str:
+        # 订单号分类
+        if str(out_trade_no).startswith('orde'):
+            order = QuestionOrder.objects.get(order_num=out_trade_no)
+            order.business_state = '待会诊'
+        else:
+            order = MedicineOrder.objects.get(order_num=out_trade_no)
+
+        if xml_info['nonce_str'] != order.nonce_str:
             return JsonResponse({'detail': '订单号不匹配'})
 
-        q_order.pay_state = '已支付'
-        q_order.business_state = '待会诊'
-        q_order.save()
+        order.pay_state = '已支付'
+        order.save()
         return JsonResponse({'detail': '修改成功'})

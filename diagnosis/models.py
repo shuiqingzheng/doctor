@@ -4,6 +4,15 @@ from ckeditor.fields import RichTextField
 
 
 class Recipe(models.Model):
+    order = models.ForeignKey(
+        MedicineOrder,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='recipe',
+        verbose_name='药品订单',
+        help_text='药品订单'
+    )
     total_price = models.DecimalField(max_digits=6, decimal_places=2, verbose_name='总价格', help_text='总价格')
     recipe_result = RichTextField(verbose_name='诊断结论', help_text='诊断结论')
     PRICE_TYPE_CHOICES = (
