@@ -4,7 +4,7 @@ from ckeditor.fields import RichTextField
 
 
 class Recipe(models.Model):
-    order = models.ForeignKey(
+    order = models.OneToOneField(
         MedicineOrder,
         on_delete=models.CASCADE,
         null=True,

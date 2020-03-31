@@ -10,7 +10,8 @@ from order.models import QuestionOrder, MedicineOrder
 from celery_tasks.tasks import wx_pay
 from myuser.models import PatientUser
 from diagnosis.serializers import (
-    DiaDetailSerializer, VideoDetailSerializer, ImageDetailSerializer
+    DiaDetailSerializer, VideoDetailSerializer, ImageDetailSerializer,
+    RecipeRetrieveSerializer, DiaMedicineSerializer
 )
 from oauth2_provider.contrib.rest_framework import TokenHasScope
 import xmltodict
@@ -40,6 +41,26 @@ class MedicineOrderView(viewsets.ModelViewSet):
         else:
             return self.model_name.objects.order_by('-create_time')
 
+    def retrieve(self, request, *args, **kwargs):
+        """
+        - 获取订单详情(处方详情)
+        """
+        response_data = dict()
+        order = self.get_object()
+        serializer_order = self.get_serializer(order)
+        response_data.update({'order_info': serializer_order.data})
+
+        if hasattr(order, 'recipe'):
+            recipe = order.recipe
+            medicine_queryset = recipe.diamedicine.all()
+            serializer_medicine = DiaMedicineSerializer(medicine_queryset, many=True)
+            response_data['order_info'].update({'medicine_info': serializer_medicine.data})
+
+            serializer_recipe = RecipeRetrieveSerializer(recipe)
+            response_data['order_info'].update({'recipe_info': serializer_recipe.data})
+
+        return Response(response_data)
+
 
 class QuestionOrderView(viewsets.ModelViewSet):
     permission_classes = [TokenHasScope, ]
@@ -62,7 +83,7 @@ class QuestionOrderView(viewsets.ModelViewSet):
 
     def retrieve(self, request, *args, **kwargs):
         """
-        - 获取订单详情
+        - 获取订单详情(复诊详情)
         """
         response_data = dict()
         order = self.get_object()
@@ -103,6 +124,13 @@ class PayView(generics.GenericAPIView):
     permission_classes = [TokenHasScope, ]
     required_scopes = ['patient']
 
+    def validate_order(self, order, start_str):
+        order_num = order.order_num
+        if not order_num.startswith(start_str):
+            return False
+
+        return True
+
     def post(self, request, *args, **kwargs):
         s = self.get_serializer(data=request.data)
         s.is_valid(raise_exception=True)
@@ -111,8 +139,14 @@ class PayView(generics.GenericAPIView):
         order_type = s.validated_data['order_type']
         if order_type == 'question':
             order = QuestionOrder.objects.get(id=order_id)
+            valid = self.validate_order(order, 'orde')
         else:
             order = MedicineOrder.objects.get(id=order_id)
+            valid = self.validate_order(order, 'prep')
+
+        if not valid:
+            return Response({'detail': '订单号存在问题, 请查看'}, status=status.HTTP_400_BAD_REQUEST)
+
         price_fee = int(order.order_price * 100)
         # 异步向微信发起统一支付请求
         pay = wx_pay.delay('{}'.format(order.order_num), price_fee, openid, order_type)
@@ -146,11 +180,14 @@ def callback(request, *args, **kwargs):
     elif return_code == 'SUCCESS':
         out_trade_no = xml_info['out_trade_no']  # 订单号
         # 订单号分类
-        if str(out_trade_no).startswith('orde'):
-            order = QuestionOrder.objects.get(order_num=out_trade_no)
-            order.business_state = '待会诊'
-        else:
-            order = MedicineOrder.objects.get(order_num=out_trade_no)
+        try:
+            if str(out_trade_no).startswith('orde'):
+                order = QuestionOrder.objects.get(order_num=out_trade_no)
+                order.business_state = '待会诊'
+            else:
+                order = MedicineOrder.objects.get(order_num=out_trade_no)
+        except Exception:
+            return JsonResponse({'detail': '订单不存在'})
 
         if xml_info['nonce_str'] != order.nonce_str:
             return JsonResponse({'detail': '订单号不匹配'})
