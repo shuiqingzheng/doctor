@@ -48,16 +48,16 @@ class MedicineOrderView(viewsets.ModelViewSet):
         response_data = dict()
         order = self.get_object()
         serializer_order = self.get_serializer(order)
-        response_data.update({'order_info': serializer_order.data})
+        response_data.update(serializer_order.data)
 
         if hasattr(order, 'recipe'):
             recipe = order.recipe
             medicine_queryset = recipe.diamedicine.all()
             serializer_medicine = DiaMedicineSerializer(medicine_queryset, many=True)
-            response_data['order_info'].update({'medicine_info': serializer_medicine.data})
+            response_data['medicine_info'] = serializer_medicine.data
 
             serializer_recipe = RecipeRetrieveSerializer(recipe)
-            response_data['order_info'].update({'recipe_info': serializer_recipe.data})
+            response_data['recipe_info'] = serializer_recipe.data
 
         return Response(response_data)
 
