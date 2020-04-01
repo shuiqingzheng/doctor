@@ -4,6 +4,7 @@ from myuser.models import DoctorUser
 from myuser.serializers import DoctorRetrieveSerializer
 from diagnosis.serializers import RecipeRetrieveSerializer, DiaMedicineSerializer
 from django.conf import settings
+from medicine.models import Medicine
 
 
 class MedicineOrderSerializer(serializers.ModelSerializer):
@@ -13,6 +14,8 @@ class MedicineOrderSerializer(serializers.ModelSerializer):
 
 
 class OrderMedicineOrderSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
+
     recipe_info = serializers.SerializerMethodField(label='处方信息')
 
     create_time = serializers.DateTimeField(format=settings.DATETIME_TOTAL_FORMAT, required=False)
@@ -20,6 +23,28 @@ class OrderMedicineOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = MedicineOrder
         exclude = ['patient_id', 'doctor_id', 'nonce_str']
+
+    def get_image_url(self, obj):
+        address = ':'.join((settings.NGINX_SERVER, str(settings.NGINX_PORT)))
+
+        recipe = obj.recipe
+        if not recipe:
+            return
+
+        medicine_queryset = recipe.diamedicine.all()
+        if not medicine_queryset:
+            return
+
+        m = Medicine.objects.filter(officical_name__in=[m.medicine_name for m in medicine_queryset])[0]
+        if not m:
+            return
+
+        image_obj = m.medicine_images.all()[0]
+        if not image_obj:
+            return
+
+        url = image_obj.image.url
+        return ''.join([address, url])
 
     def get_recipe_info(self, obj):
         response_data = dict()

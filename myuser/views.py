@@ -20,6 +20,7 @@ from medicine.permissions import TokenHasPermission
 from myuser.utils import redis_conn, UpdateModelSameCode
 from myuser.permissions import PatientBasePermission, DoctorBasePermission
 from oauth2_provider.contrib.rest_framework import TokenHasScope
+import datetime
 
 
 def index(request, *args, **kwargs):
@@ -276,8 +277,11 @@ class DoctorSetTimeView(BaseSetTimeView):
 
     def get_queryset(self):
         doctor = self.get_doctor_obj(self.request.auth)
+        from django.db.models import Func, F
         if doctor and self.action == 'list':
-            return self.queryset.filter(owner=doctor)
+            return self.queryset.filter(owner=doctor).order_by(
+                'week_day',
+                Func(F('start_time') + datetime.timedelta(hours=8), function='hour'))
 
         return self.queryset
 
