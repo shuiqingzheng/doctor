@@ -275,19 +275,35 @@ class DoctorSerializer(serializers.ModelSerializer):
         fields = ('id', 'nick_name', 'user_picture', 'referral', 'username', 'hospital', 'good_at', 'server_times')
 
 
+class DisplayChoiceField(serializers.ChoiceField):
+
+    def to_internal_value(self, data):
+        if data == '' and self.allow_blank:
+            return ''
+
+        try:
+            return self.choice_strings_to_values[str(data)]
+        except KeyError:
+            self.fail('invalid_choice', input=data)
+
+    def to_representation(self, obj):
+        """返回选项的值"""
+        return self._choices[obj]
+
+
 class DoctorSetTimeSerializer(serializers.ModelSerializer):
     start_time = serializers.DateTimeField(format=settings.DATETIME_FORMAT, label='开始时间')
     end_time = serializers.DateTimeField(format=settings.DATETIME_FORMAT, label='结束时间')
     WEEK_DAY_CHOICES = (
-        ('周一', '周一'),
-        ('周二', '周二'),
-        ('周三', '周三'),
-        ('周四', '周四'),
-        ('周五', '周五'),
-        ('周六', '周六'),
-        ('周日', '周日'),
+        ('1', '周一'),
+        ('2', '周二'),
+        ('3', '周三'),
+        ('4', '周四'),
+        ('5', '周五'),
+        ('6', '周六'),
+        ('7', '周日'),
     )
-    week_day = serializers.ChoiceField(choices=WEEK_DAY_CHOICES, label='周几')
+    week_day = DisplayChoiceField(choices=WEEK_DAY_CHOICES, label='周几')
     # 时间段总长
     total_time = 15 * 60
     # 时间间隔
