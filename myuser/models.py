@@ -168,7 +168,7 @@ class DoctorSetTime(models.Model):
         ('6', '周六'),
         ('7', '周日'),
     )
-    week_day = models.CharField(max_length=1, choices=WEEK_DAY_CHOICES, default='1', blank=True, verbose_name='周几', help_text='周几')
+    week_day = models.CharField(max_length=4, choices=WEEK_DAY_CHOICES, default='1', blank=True, verbose_name='周几', help_text='周几')
 
     def __str__(self):
         return '{}'.format(self.pk)
