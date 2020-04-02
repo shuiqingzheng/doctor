@@ -42,7 +42,7 @@ class Medicine(models.Model):
 
     standard = models.CharField(max_length=200, verbose_name='规格', help_text='规格')
 
-    price = models.DecimalField(max_digits=8, decimal_places=3, verbose_name='价格', help_text='价格')
+    price = models.DecimalField(max_digits=8, decimal_places=2, verbose_name='价格', help_text='价格')
 
     product_source = models.CharField(max_length=200, verbose_name='生产厂家', help_text='生产厂家')
 
