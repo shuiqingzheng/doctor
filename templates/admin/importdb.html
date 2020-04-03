@@ -1,0 +1,45 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block content %}
+
+    <form id="importdb-form" method="post" enctype="multipart/form-data" novalidate action="/admin/importfile/">
+        {% csrf_token %}
+        <table>
+            <thead>
+                <tr>
+                  <th scope="col" class="action-checkbox-column">
+                    <div class="text">
+                        选择文件
+                    </div>
+                  </th>
+                  <th scope="col">
+                    <div class="text">
+                        操作
+                    </div>
+                  </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style='text-align: center;'>
+                        <input type="file" name="file" value="文件">
+                    </td>
+                    <td style='text-align: center;'>
+                        <input type="submit" value='导入'>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="color: orange;">⚠️ 请保证文件完全符合模板</td>
+                </tr>
+            </tbody>
+        </table>
+    </form>
+    {% if error_msg %}
+    <div class="error_response" style="color: red;">同步错误信息: {{ error_msg }}</div>
+    {% endif %}
+    {% if success_msg %}
+    <div class="success_response" style="color: green;">同步信息结果: {{ success_msg }} !</div>
+    {% endif %}
+
+{% endblock content %}

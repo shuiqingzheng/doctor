@@ -19,6 +19,7 @@ from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from medicine.views import choose_one, choose_two_and_three
+from importfile.views import ImportFileView
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -34,6 +35,8 @@ urlpatterns = [
     path('api-docs/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 
     path('admin/', admin.site.urls),
+    path('admin/importfile/', ImportFileView.as_view(), name='import-file'),
+
     path('choose_one/', choose_one),
     path('choose_two_and_three/', choose_two_and_three),
 

@@ -1,0 +1,19 @@
+{% extends "admin/index.html" %}
+
+{% block sidebar %}
+    {{ block.super }}
+    <div>
+        <h1>文件导入</h1>
+        <a href="/admin/importfile/" class="a_btn">
+            导入饮片文件
+        </a>
+        <style>
+            .a_btn {
+                border: 1px solid rgb(132, 173, 197);
+                padding: 4px;
+                background: rgb(132, 173, 197);
+                color: white !important;;
+            }
+        </style>
+    </div>
+{% endblock %}

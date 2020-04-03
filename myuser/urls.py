@@ -1,6 +1,6 @@
 from django.urls import path
 from myuser.views import (
-    index, UploadFileView,
+    index, UploadFileView, LocalTimeView,
     PatientView, DoctorView, SmsView,
     PatientInfoView, DoctorInfoView,
     DoctorSetTimeView, PatientGetTimeView,
@@ -14,6 +14,8 @@ urlpatterns = [
     path('', index, name='index'),
     path('uploadimage/', UploadImageView.as_view({'post': 'create'}), name='uploadImage'),
     path('uploadfile/', UploadFileView.as_view({'post': 'create'}), name='uploadFile'),
+    # 获取本地时间
+    path('localtime/', LocalTimeView.as_view(), name='localtime'),
 
     # register
     path('sms/<str:phone>/', SmsView.as_view(), name='sms'),

@@ -46,7 +46,7 @@ class DiaDetailSerializer(serializers.ModelSerializer):
 
 
 class PatientDiaDetailSerializer(serializers.ModelSerializer):
-    order_time = serializers.DateTimeField(label='预约时间', required=False, format=settings.DATETIME_FORMAT)
+    order_time = serializers.DateTimeField(label='预约时间', format=settings.DATETIME_FORMAT)
 
     class Meta:
         model = DiaDetail

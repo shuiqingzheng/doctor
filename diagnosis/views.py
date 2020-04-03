@@ -1,4 +1,5 @@
 from rest_framework import viewsets, status
+from django.http import JsonResponse
 # from rest_framework.permissions import AllowAny
 # from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
@@ -134,7 +135,11 @@ class DiaDetailPatientView(viewsets.ModelViewSet):
 
             try:
                 q = QuestionOrderSerializer(data=order_data)
-                q.is_valid(raise_exception=True)
+                q_valid = q.is_valid()
+                if not q_valid:
+                    transaction.savepoint_rollback(point)
+                    return JsonResponse(q.errors, status=400)
+
                 q_obj = q.save()
                 diadetail_data.update({
                     'patient_id': patient.id,
@@ -142,7 +147,11 @@ class DiaDetailPatientView(viewsets.ModelViewSet):
                     'room_number': int('{}{}{}'.format(patient.id, doctor.id, q_obj.id))
                 })
                 s = PatientDiaDetailSerializer(data=diadetail_data)
-                s.is_valid(raise_exception=True)
+                s_valid = s.is_valid()
+                if not s_valid:
+                    transaction.savepoint_rollback(point)
+                    return JsonResponse(s.errors, status=400)
+
                 s.save(order_question=q_obj)
             except Exception as e:
                 transaction.savepoint_rollback(point)
@@ -315,10 +324,18 @@ class RecipeView(viewsets.ModelViewSet):
                 point = transaction.savepoint()
                 try:
                     m_order = MedicineOrderSerializer(data=order_info)
-                    m_order.is_valid(raise_exception=True)
+                    m_valid = m_order.is_valid()
+                    if not m_valid:
+                        transaction.savepoint_rollback(point)
+                        return JsonResponse(m_order.errors, status=400)
+
                     order = m_order.save()
                     recipe_serializer = RecipeSerializer(data=data)
-                    recipe_serializer.is_valid(raise_exception=True)
+                    r_valid = recipe_serializer.is_valid()
+                    if not r_valid:
+                        transaction.savepoint_rollback(point)
+                        return JsonResponse(recipe_serializer.errors, status=400)
+
                     recipe = recipe_serializer.save()
 
                     # 生成药品订单

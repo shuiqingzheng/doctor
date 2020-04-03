@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'medicine',
     'order',
     'diagnosis',
+    'importfile',
 ]
 
 MIDDLEWARE = [

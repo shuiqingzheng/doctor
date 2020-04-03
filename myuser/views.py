@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import Http404
-from rest_framework import viewsets, generics, status, filters
+from django.utils import timezone
+from rest_framework import viewsets, generics, status, filters, views
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import AllowAny
@@ -25,6 +26,15 @@ import datetime
 
 def index(request, *args, **kwargs):
     return render(request, 'index.html')
+
+
+class LocalTimeView(views.APIView):
+    permission_classes = [TokenHasPermission, ]
+
+    def get(self, request, *args, **kwargs):
+        _time = timezone.now()
+        localtime = _time.strftime('%Y-%m-%d %H:%M:%S')
+        return Response({'localtime': localtime})
 
 
 class UploadFileView(viewsets.ModelViewSet):

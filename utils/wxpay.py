@@ -7,6 +7,7 @@ import random
 import string
 from django.conf import settings
 from order.models import QuestionOrder, MedicineOrder
+from datetime import timedelta, datetime
 
 
 requests.DEFAULT_RETRIES = 5
@@ -83,6 +84,11 @@ def generate_bill(pay_order_num, fee, openid, order_type):
     _order.nonce_str = nonce_str
     _order.save()
 
+    time_now = datetime.now()
+    time_end = time_now + timedelta(minutes=30)
+    time_start = time_now.strftime('%Y%m%d%H%M%S')
+    time_expire = time_end.strftime('%Y%m%d%H%M%S')
+
     param = {
         "appid": APPID,
         "mch_id": MCHID,
@@ -94,6 +100,8 @@ def generate_bill(pay_order_num, fee, openid, order_type):
         "notify_url": NOTIFY_URL,
         "trade_type": 'JSAPI',
         "openid": openid,
+        "time_start": time_start,
+        "time_expire": time_expire
     }
     sign = generate_sign(param)
     param["sign"] = sign
@@ -120,6 +128,9 @@ def generate_bill(pay_order_num, fee, openid, order_type):
             err_msg = xmlmsg['xml']['err_code_des']
             err_code = xmlmsg['xml']['err_code']
             return {'detail': '{}: {}'.format(err_code, err_msg)}
+    else:
+        err_msg = xmlmsg['xml']['return_msg']
+        return {'detail': '{}'.format(err_msg)}
 
 
 # generate_bill(generate_current_day(), 1, 'oPP9p5FO1SZeBA7Zah9xdC0nDAig')
