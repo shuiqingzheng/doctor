@@ -6,6 +6,7 @@ import time
 import random
 import string
 from django.conf import settings
+from django.utils import timezone
 from order.models import QuestionOrder, MedicineOrder
 from datetime import timedelta, datetime
 
@@ -84,7 +85,8 @@ def generate_bill(pay_order_num, fee, openid, order_type):
     _order.nonce_str = nonce_str
     _order.save()
 
-    time_now = datetime.now()
+    _time = datetime.now()
+    time_now = timezone.localtime(_time)
     time_end = time_now + timedelta(minutes=30)
     time_start = time_now.strftime('%Y%m%d%H%M%S')
     time_expire = time_end.strftime('%Y%m%d%H%M%S')

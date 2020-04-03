@@ -33,7 +33,8 @@ class LocalTimeView(views.APIView):
 
     def get(self, request, *args, **kwargs):
         _time = timezone.now()
-        localtime = _time.strftime('%Y-%m-%d %H:%M:%S')
+        time = timezone.localtime(_time)
+        localtime = time.strftime('%Y-%m-%d %H:%M:%S')
         return Response({'localtime': localtime})
 
 
