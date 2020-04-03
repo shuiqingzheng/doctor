@@ -8,7 +8,7 @@ import string
 from django.conf import settings
 from django.utils import timezone
 from order.models import QuestionOrder, MedicineOrder
-from datetime import timedelta, datetime
+from datetime import timedelta
 
 
 requests.DEFAULT_RETRIES = 5
@@ -85,7 +85,7 @@ def generate_bill(pay_order_num, fee, openid, order_type):
     _order.nonce_str = nonce_str
     _order.save()
 
-    _time = datetime.now()
+    _time = timezone.now()
     time_now = timezone.localtime(_time)
     time_end = time_now + timedelta(minutes=30)
     time_start = time_now.strftime('%Y%m%d%H%M%S')
