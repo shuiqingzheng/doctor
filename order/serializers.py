@@ -39,7 +39,12 @@ class OrderMedicineOrderSerializer(serializers.ModelSerializer):
         if not m:
             return
 
-        image_obj = m.medicine_images.all()[0]
+        m_images = m.medicine_images.all()
+
+        if not m_images:
+            return
+
+        image_obj = m_images[0]
         if not image_obj:
             return
 
