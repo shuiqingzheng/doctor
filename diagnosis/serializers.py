@@ -12,6 +12,7 @@ from django.conf import settings
 
 class PrescriptionSerializer(serializers.ModelSerializer):
     create_time = serializers.DateTimeField(format=settings.DATETIME_TOTAL_FORMAT, read_only=True)
+    patient_info = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Prescription
@@ -21,6 +22,25 @@ class PrescriptionSerializer(serializers.ModelSerializer):
                 'read_only': True
             }
         }
+
+    def get_patient_info(self, val):
+        patient_id = val.patient_id
+
+        try:
+            patient = PatientUser.objects.get(pk=patient_id)
+        except Exception:
+            return
+
+        response_data = {
+            'username': patient.owner.username,
+            'phone': patient.owner.phone,
+            'sex': patient.owner.sex,
+            'id_card': patient.id_card,
+            'birthday': patient.birthday,
+            'position': patient.position,
+        }
+
+        return response_data
 
     def validate(self, attr):
         user = self.context['view'].request.auth.user
