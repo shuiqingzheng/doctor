@@ -1,9 +1,47 @@
 from rest_framework import serializers
-from diagnosis.models import DiaDetail, History, Recipe, DiaMedicine, ImageDetail, VideoDetail
-from myuser.models import PatientUser
+from diagnosis.models import (
+    DiaDetail, History, Recipe,
+    DiaMedicine, ImageDetail,
+    VideoDetail, Prescription
+)
+from myuser.models import PatientUser, DoctorUser
 from myuser.serializers import PatientBaseInfoSerializer
 from medicine.models import Medicine
 from django.conf import settings
+
+
+class PrescriptionSerializer(serializers.ModelSerializer):
+    create_time = serializers.DateTimeField(format=settings.DATETIME_TOTAL_FORMAT, read_only=True)
+
+    class Meta:
+        model = Prescription
+        fields = '__all__'
+        extra_kwargs = {
+            'patient_id': {
+                'read_only': True
+            }
+        }
+
+    def validate(self, attr):
+        user = self.context['view'].request.auth.user
+
+        try:
+            patient = PatientUser.objects.get(owner=user)
+        except Exception:
+            raise serializers.ValidationError('对不起, 您当前患者账号不存在')
+
+        doctor_id = attr.get('doctor_id')
+        if doctor_id is None:
+            raise serializers.ValidationError('请选择您需要的对应医生')
+
+        try:
+            DoctorUser.objects.get(pk=doctor_id)
+        except Exception:
+            raise serializers.ValidationError('您所选择的医生不存在')
+
+        attr.update({'patient_id': patient.id})
+
+        return attr
 
 
 class ImageDetailSerializer(serializers.ModelSerializer):

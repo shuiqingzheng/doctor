@@ -3,13 +3,19 @@ from django.shortcuts import reverse
 from django.utils.html import format_html
 from diagnosis.models import (
     DiaDetail, ImageDetail, VideoDetail,
-    Recipe, DiaMedicine, History
+    Recipe, DiaMedicine, History, Prescription
 )
 from order.admin import BaseOrderAdmin
 
 
 class BaseDetailAdmin(BaseOrderAdmin):
     pass
+
+
+@admin.register(Prescription)
+class PrescriptionAdmin(admin.ModelAdmin):
+    list_display = ('id', 'patient_id', 'doctor_id', 'nums', 'create_time')
+    search_fields = ('patient_id', 'doctor_id')
 
 
 @admin.register(DiaDetail)

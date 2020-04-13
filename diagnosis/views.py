@@ -7,12 +7,13 @@ from django_filters.utils import timezone
 from django.http import QueryDict, Http404
 from django.db import transaction
 # from django_filters.rest_framework import DjangoFilterBackend
-from diagnosis.models import DiaDetail, History, Recipe, DiaMedicine
+from diagnosis.models import DiaDetail, History, Recipe, DiaMedicine, Prescription
 from diagnosis.filters import SearchDiaDetail
 from diagnosis.serializers import (
     DiaDetailSerializer, HistorySerializer, SwaggerHistorySerializer,
     RecipeSerializer, CreateHistorySerializer, PatientDiaDetailSerializer,
     SwaggerPDDSerializer, RecipeRetrieveSerializer, DiaMedicineSerializer,
+    PrescriptionSerializer
 )
 from medicine.permissions import TokenHasPermission
 from myuser.models import PatientUser, DoctorUser
@@ -27,6 +28,26 @@ from utils.generate import create_order_number
 from myuser.permissions import PatientBasePermission
 from order.serializers import QuestionOrderSerializer, MedicineOrderSerializer
 from order.models import QuestionOrder, MedicineOrder
+
+
+class PrescriptionView(viewsets.ModelViewSet):
+    """
+    - 拍方抓药
+    """
+    permission_classes = [TokenHasPermission, ]
+    serializer_class = PrescriptionSerializer
+    queryset = Prescription.objects.order_by('-create_time')
+
+    def get_queryset(self):
+        token = self.request.auth
+
+        if token is not None:
+            if hasattr(token.user, 'patient'):
+                return self.queryset.filter(patient_id=token.user.patient.id)
+            if hasattr(token.user, 'doctor'):
+                return self.queryset.filter(doctor_id=token.user.doctor.id)
+
+        return self.queryset
 
 
 class DiaDetailView(viewsets.ModelViewSet):
@@ -198,6 +219,24 @@ class HistoryView(viewsets.ModelViewSet):
 
         return True
 
+    def prep_create(self, request, patient_id, *args, **kwargs):
+        """
+        - 医生创建病历(开方抓药)
+        """
+        doctor = DoctorUser.objects.get(owner=request.auth.user)
+        patient = self.valid_patient_info(patient_id)
+
+        data = {
+            'patient_id': patient.id,
+            'doctor_id': doctor.id,
+            'history_create_time': timezone.localtime(timezone.now())
+        }
+        data.update(**request.data)
+        s = HistorySerializer(data=data)
+        s.is_valid(raise_exception=True)
+        s.save()
+        return Response(s.data)
+
     def create(self, request, patient_id, diagdetail_id, *args, **kwargs):
         """
         - 医生为患者创建病历
@@ -216,7 +255,7 @@ class HistoryView(viewsets.ModelViewSet):
         data = {
             'patient_id': patient.id,
             'doctor_id': doctor.id,
-            'history_create_time': timezone.now()
+            'history_create_time': timezone.localtime(timezone.now())
         }
         data.update(**request.data)
         s = HistorySerializer(data=data)

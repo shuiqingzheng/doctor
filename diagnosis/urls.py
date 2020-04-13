@@ -1,14 +1,14 @@
 from django.urls import path
 from diagnosis.views import (
     HistoryView, DiaDetailView, DiaDetailPatientView,
-    RecipeView
+    RecipeView, PrescriptionView
 )
 from myuser.views import PatientView
 
 
 urlpatterns = [
     # 病历
-    path('history/<int:patient_id>/', HistoryView.as_view({'get': 'user_history'}), name='history-pk-detail'),
+    path('history/<int:patient_id>/', HistoryView.as_view({'get': 'user_history', 'post': 'prep_create'}), name='history-pk-detail'),
     path('history/<int:patient_id>/<int:diagdetail_id>/', HistoryView.as_view({'post': 'create'}), name='history-create'),
 
     # 复诊
@@ -26,5 +26,8 @@ urlpatterns = [
     path('recipe/create/<int:history_id>/', RecipeView.as_view({'post': 'create'}), name='doctor-create-recipe'),
     # 根据病历获取处方
     path('recipe/<int:history_id>/', RecipeView.as_view({'get': 'retrieve'}), name='recipe-retrieve'),
+
+    path('prescription/', PrescriptionView.as_view({'post': 'create', 'get': 'list'}), name='prescription'),
+    path('prescription/<int:pk>/', PrescriptionView.as_view({'get': 'retrieve'}), name='prescription-detail'),
 
 ]

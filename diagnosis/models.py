@@ -3,6 +3,36 @@ from order.models import QuestionOrder, MedicineOrder
 from ckeditor.fields import RichTextField
 
 
+class Prescription(models.Model):
+    """
+    拍方抓药
+    """
+    create_time = models.DateTimeField(auto_now_add=True)
+
+    patient_id = models.IntegerField(verbose_name='患者ID', help_text='患者ID')
+
+    doctor_id = models.IntegerField(verbose_name='医生ID', help_text='医生ID')
+
+    image_one = models.URLField(verbose_name='药方图片1', help_text='药方图片1')
+
+    image_two = models.URLField(blank=True, null=True, verbose_name='药方图片2', help_text='药方图片2')
+
+    image_three = models.URLField(blank=True, null=True, verbose_name='药方图片3', help_text='药方图片3')
+
+    nums = models.IntegerField(verbose_name='付数', help_text='付数')
+
+    note = models.TextField(verbose_name='备注', help_text='备注')
+
+    def __str__(self):
+        return '{}'.format(self.pk)
+
+    class Meta:
+        db_table = 'prescription'
+        verbose_name = '拍方抓药'
+        verbose_name_plural = verbose_name
+        ordering = ['-pk', ]
+
+
 class Recipe(models.Model):
     order = models.OneToOneField(
         MedicineOrder,
