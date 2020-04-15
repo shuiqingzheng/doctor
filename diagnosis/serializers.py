@@ -13,6 +13,7 @@ from django.conf import settings
 class PrescriptionSerializer(serializers.ModelSerializer):
     create_time = serializers.DateTimeField(format=settings.DATETIME_TOTAL_FORMAT, read_only=True)
     patient_info = serializers.SerializerMethodField(read_only=True)
+    state = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Prescription
@@ -22,6 +23,24 @@ class PrescriptionSerializer(serializers.ModelSerializer):
                 'read_only': True
             }
         }
+
+    def get_state(self, val):
+        # 前端同时生成病历和处方
+        try:
+            history = History.objects.get(pk=val.history_id)
+        except History.DoesNotExist:
+            return '待抓药'
+
+        recipe = history.recipe
+        if not recipe:
+            return '待抓药'
+
+        state = recipe.order.pay_state
+        if state == '未支付':
+            # 已经抓药 等待支付
+            return '待支付'
+        else:
+            return '已完成'
 
     def get_patient_info(self, val):
         patient_id = val.patient_id

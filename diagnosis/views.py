@@ -210,6 +210,13 @@ class HistoryView(viewsets.ModelViewSet):
             diadetail = None
         return diadetail
 
+    def valid_prep_info(self, prep_id):
+        try:
+            prep = Prescription.objects.get(id=prep_id)
+        except Prescription.DoesNotExist:
+            prep = None
+        return prep
+
     def valiad_info(self, dia, patient, doctor):
         if not any([dia, patient, doctor]):
             return False
@@ -219,12 +226,16 @@ class HistoryView(viewsets.ModelViewSet):
 
         return True
 
-    def prep_create(self, request, patient_id, *args, **kwargs):
+    def prep_create(self, request, patient_id, prep_id, *args, **kwargs):
         """
         - 医生创建病历(开方抓药)
         """
         doctor = DoctorUser.objects.get(owner=request.auth.user)
         patient = self.valid_patient_info(patient_id)
+        prep = self.valid_prep_info(prep_id)
+
+        if not prep:
+            return Http404
 
         data = {
             'patient_id': patient.id,
@@ -234,7 +245,10 @@ class HistoryView(viewsets.ModelViewSet):
         data.update(**request.data)
         s = HistorySerializer(data=data)
         s.is_valid(raise_exception=True)
-        s.save()
+        his = s.save()
+
+        prep.history_id = his.id
+        prep.save()
         return Response(s.data)
 
     def create(self, request, patient_id, diagdetail_id, *args, **kwargs):

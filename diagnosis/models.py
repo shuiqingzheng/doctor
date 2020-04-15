@@ -13,6 +13,8 @@ class Prescription(models.Model):
 
     doctor_id = models.IntegerField(verbose_name='医生ID', help_text='医生ID')
 
+    history_id = models.IntegerField(blank=True, null=True, verbose_name='病史ID', help_text='病史ID')
+
     image_one = models.URLField(verbose_name='药方图片1', help_text='药方图片1')
 
     image_two = models.URLField(blank=True, null=True, verbose_name='药方图片2', help_text='药方图片2')
