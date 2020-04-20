@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'ckeditor',
     'ckeditor_uploader',
 
+    'article',
     'aduser',
     'myuser',
     'medicine',

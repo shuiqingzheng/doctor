@@ -46,4 +46,5 @@ urlpatterns = [
     path('order/', include('order.urls'), name='order'),
     path('diag/', include('diagnosis.urls'), name='diagnosis'),
     path('medicine/', include('medicine.urls'), name='medicine'),
+    path('article/', include('article.urls'), name='article'),
 ]

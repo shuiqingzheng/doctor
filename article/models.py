@@ -44,17 +44,15 @@ class Article(models.Model):
     文章
     """
     # 文章分类
-    type = models.ForeignKey(ArticleType, on_delete=models.CASCADE, related_name='article')
+    article_type = models.ForeignKey(ArticleType, null=True, blank=True, on_delete=models.CASCADE, related_name='article')
     # 专题分类
-    special = models.ForeignKey(SpecialArticle, on_delete=models.CASCADE, related_name='article')
+    special = models.ForeignKey(SpecialArticle, null=True, blank=True, on_delete=models.CASCADE, related_name='article')
 
     title = models.CharField(max_length=200, blank=True, verbose_name='文章标题', help_text='文章标题')
 
-    create_time = models.DateTimeField(verbose_name='文章日期', help_text='文章日期')
+    create_time = models.DateTimeField(auto_now_add=True, verbose_name='文章日期', help_text='文章日期')
 
-    content = RichTextField(verbose_name='文章内容', help_text='文章内容')
-
-    hospital = models.CharField(verbose_name='')
+    content = models.TextField(verbose_name='文章内容', help_text='文章内容')
 
     # 发布文章的医生
     article_doctor = models.ForeignKey(DoctorUser, on_delete=models.CASCADE, related_name='article')
@@ -62,14 +60,15 @@ class Article(models.Model):
     ARTICLE_STATE_CHOICES = (
         ('已发布', '已发布'),
         ('草稿', '草稿'),
-        ('已撤回', '已撤回')
+        ('已撤回', '已撤回'),
+        ('管理员撤回', '管理员撤回')
     )
-    article_state = models.CharField(choices=ARTICLE_STATE_CHOICES, max_length=4, blank=True, default='草稿', verbose_name='文章状态', help_text='文章状态')
+    article_state = models.CharField(choices=ARTICLE_STATE_CHOICES, max_length=10, blank=True, default='草稿', verbose_name='文章状态', help_text='文章状态')
 
     article_click = models.IntegerField(default=1, blank=True, verbose_name='文章热度（整数）', help_text='文章热度（整数）')
 
     def __str__(self):
-        return self.pk
+        return '{}'.format(self.pk)
 
     class Meta:
         db_table = 'article'
