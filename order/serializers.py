@@ -8,6 +8,7 @@ from medicine.models import Medicine
 
 
 class MedicineOrderSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = MedicineOrder
         fields = '__all__'
@@ -20,12 +21,22 @@ class OrderMedicineOrderSerializer(serializers.ModelSerializer):
 
     create_time = serializers.DateTimeField(format=settings.DATETIME_TOTAL_FORMAT, required=False)
 
+    diag_time = serializers.SerializerMethodField()
+
     class Meta:
         model = MedicineOrder
         exclude = ['patient_id', 'doctor_id', 'nonce_str']
 
+    def get_diag_time(self, val):
+        if not hasattr(val, 'diadetail'):
+            return
+        t = val.diadetail.order_time
+        return t.strftime('%Y-%m-%d %H:%M:%S')
+
     def get_image_url(self, obj):
         address = ':'.join((settings.NGINX_SERVER, str(settings.NGINX_PORT)))
+        if not hasattr(obj, 'recipe'):
+            return
 
         recipe = obj.recipe
         if not recipe:
@@ -35,10 +46,11 @@ class OrderMedicineOrderSerializer(serializers.ModelSerializer):
         if not medicine_queryset:
             return
 
-        m = Medicine.objects.filter(officical_name__in=[m.medicine_name for m in medicine_queryset])[0]
-        if not m:
+        ms = Medicine.objects.filter(officical_name__in=[m.medicine_name for m in medicine_queryset])
+        if not ms:
             return
 
+        m = ms[0]
         m_images = m.medicine_images.all()
 
         if not m_images:
@@ -53,6 +65,9 @@ class OrderMedicineOrderSerializer(serializers.ModelSerializer):
 
     def get_recipe_info(self, obj):
         response_data = dict()
+        if not hasattr(obj, 'recipe'):
+            return {'detail': '处方被删除'}
+
         recipe = obj.recipe
 
         if not recipe:
@@ -72,6 +87,7 @@ class OrderMedicineOrderSerializer(serializers.ModelSerializer):
 
 
 class QuestionOrderSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = QuestionOrder
         fields = '__all__'
@@ -82,9 +98,17 @@ class OrderQuestionOrderSerializer(serializers.ModelSerializer):
 
     create_time = serializers.DateTimeField(format=settings.DATETIME_TOTAL_FORMAT, required=False)
 
+    diag_time = serializers.SerializerMethodField()
+
     class Meta:
         model = QuestionOrder
         exclude = ['patient_id', 'doctor_id', 'nonce_str']
+
+    def get_diag_time(self, val):
+        if not hasattr(val, 'diadetail'):
+            return
+        t = val.diadetail.order_time
+        return t.strftime('%Y-%m-%d %H:%M:%S')
 
     def get_doctor_info(self, obj):
         try:
