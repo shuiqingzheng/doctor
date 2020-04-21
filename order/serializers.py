@@ -108,6 +108,9 @@ class OrderQuestionOrderSerializer(serializers.ModelSerializer):
         if not hasattr(val, 'diadetail'):
             return
         t = val.diadetail.order_time
+
+        if not t:
+            return
         return t.strftime('%Y-%m-%d %H:%M:%S')
 
     def get_doctor_info(self, obj):
