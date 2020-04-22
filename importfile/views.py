@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.views import View
-from importfile.constants import NAME_TO_FIELD, ONE_DEFAULT_INFO, TWO_DEFAULT_INFO
+from importfile.constants import NAME_TO_FIELD, DEFAULT_INFO
 from medicine.models import Medicine
 import pandas as pd
 
@@ -9,6 +9,7 @@ class ImportFileView(View):
     """
     - 导入文件
     """
+
     def get(self, request, *args, **kwargs):
         context = {
             'site_header': '汉典云健康系统',
@@ -39,49 +40,52 @@ class ImportFileView(View):
         field_to_name = {value: key for key, value in NAME_TO_FIELD.items()}
 
         # 简单的模板验证
-        if len(res.columns) != 8:
+        if len(res.columns) != 10:
             context.update({'error_msg': '文件不符合模板'})
             return render(request, template_name='admin/importdb.html', context=context)
 
         for col in res.columns:
             val = res.iat[start_row, col]
-            if val in field_to_name.keys():
+            v = None
+            if not pd.isna(val):
+                v = val.replace('\n', '')
+
+            if v in field_to_name.keys():
                 index_field.update({
-                    '{}'.format(field_to_name.get(val)): '{}'.format(col)
+                    '{}'.format(field_to_name.get(v)): '{}'.format(col)
                 })
 
-        for row in res.index[start_row+1:]:
+        for row in res.index[start_row + 1:]:
             a = dict()
-            key = 0
             for field_name, index in index_field.items():
                 value = res.iat[row, int(index)]
+
+                if isinstance(value, str):
+                    value = value.replace('\n', '')
+
                 if pd.isna(value) or pd.isnull(value):
                     continue
 
-                if field_name == 'medicine_type':
-                    if value == '草药':
-                        a.update(ONE_DEFAULT_INFO)
-                        continue
-                    elif value in ['中成药', '西药']:
-                        a.update(TWO_DEFAULT_INFO)
-                        continue
-                    else:
-                        key = 1
-                        break
                 a.update({
                     field_name: value
                 })
-
-            if key == 1:
-                break
 
             a.update({
                 'good_for': a.get('officical_name'),
                 'detail': a.get('officical_name'),
             })
 
+            a.update(DEFAULT_INFO)
+
             obj = Medicine.objects.filter(product_name=a.get('product_name'), officical_name=a.get('officical_name'))
-            if obj:
+            if obj and len(obj) == 1:
+                try:
+                    obj.update(**a)
+                except Exception as e:
+                    context.update({'error_msg': '保存错误,错误信息:{}'.format(e)})
+                    return render(request, template_name='admin/importdb.html', context=context)
+                continue
+            else:
                 continue
 
             if len(a) == 11:
