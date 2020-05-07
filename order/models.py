@@ -69,6 +69,9 @@ class MedicineOrder(Order):
         ('药品', '药品'),
         ('处方', '处方'),
     )
+    # 打折后的价格
+    discount_price = models.DecimalField(null=True, max_digits=8, decimal_places=2, verbose_name='折后价格', help_text='折后价格')
+
     medicine_order_form = models.CharField(choices=FORM_CHOICES, max_length=4, verbose_name='类型', help_text='类型')
 
     def __str__(self):

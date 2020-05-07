@@ -363,6 +363,10 @@ class RecipeView(viewsets.ModelViewSet):
         except History.DoesNotExist:
             return Response({'detail': '病历未创建'}, status=status.HTTP_404_NOT_FOUND)
         else:
+            try:
+                patient = PatientUser.objects.get(pk=history.patient_id)
+            except PatientUser.DoesNotExist:
+                return Response({'detail': '患者不存在'}, status=status.HTTP_404_NOT_FOUND)
             # 生成药品订单
             order_info = {
                 'order_num': 'prep_' + create_order_number(MedicineOrder, 'prep_'),
@@ -370,7 +374,9 @@ class RecipeView(viewsets.ModelViewSet):
                 'medicine_order_form': '处方',
                 'patient_id': history.patient_id,
                 'doctor_id': history.doctor_id,
-                'order_price': data.get('total_price')
+                'order_price': data.get('total_price'),
+                # 仅保存两位小数
+                'discount_price': format(float(data.get('total_price')) * float(patient.level_discount) * 0.1, '.2f')
             }
 
             with transaction.atomic():

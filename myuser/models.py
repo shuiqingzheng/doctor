@@ -4,6 +4,7 @@ from aduser.models import AdminUser
 
 
 class UploadFile(models.Model):
+
     def custom_func_upload_to(instance, filename):
         if len(filename) >= 100:
             filename = filename[:-50:-1][::-1]
@@ -22,6 +23,7 @@ class UploadFile(models.Model):
 
 
 class UploadImage(models.Model):
+
     def custom_func_upload_to(instance, filename):
         if len(filename) >= 100:
             filename = filename[:-50:-1][::-1]
@@ -40,6 +42,7 @@ class UploadImage(models.Model):
 
 
 class BaseUser(models.Model):
+
     def custom_func_upload_to(instance, filename):
         return 'upload/user_picture/{0}/{1}'.format(instance.id, filename)
 
@@ -86,6 +89,20 @@ class PatientUser(BaseUser):
     patient_state = models.CharField(max_length=20, blank=True, null=True, verbose_name='病人复诊状态', help_text='病人复诊状态')
 
     is_patientuser = models.BooleanField(default=True, verbose_name='患者', help_text='患者')
+
+    # TODO-内部员工推进(默认全部为金卡);普通会员注册的话,则需要修改对应的default值.
+    # 100-300-500-1000: 对应会员等级
+    level_point = models.IntegerField(default=1000, blank=True, verbose_name='总积分', help_text='总积分')
+
+    LEVEL_INFO_CHOICES = (
+        ('普通会员', '普通会员'),
+        ('铜卡会员', '铜卡会员'),
+        ('银卡会员', '银卡会员'),
+        ('金卡会员', '金卡会员'),
+    )
+    level_info = models.CharField(max_length=8, blank=True, choices=LEVEL_INFO_CHOICES, default='金卡会员', verbose_name='会员卡等级', help_text='会员卡等级')
+
+    level_discount = models.DecimalField(max_digits=4, blank=True, decimal_places=2, default=8, verbose_name='会员折扣', help_text='会员折扣')
 
     def __str__(self):
         return '%s' % self.pk

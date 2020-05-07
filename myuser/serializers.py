@@ -9,6 +9,9 @@ from django.conf import settings
 
 
 class UploadImageSerializer(serializers.ModelSerializer):
+    """
+    UploadImage 图片上传序列化器
+    """
     image_url = serializers.SerializerMethodField(read_only=True, label='图片地址')
 
     class Meta:
@@ -27,6 +30,9 @@ class UploadImageSerializer(serializers.ModelSerializer):
 
 
 class UploadFileSerializer(serializers.ModelSerializer):
+    """
+    UploadFile 文件上传序列化器
+    """
     file_url = serializers.SerializerMethodField(read_only=True, label='文件地址')
 
     class Meta:
@@ -45,6 +51,9 @@ class UploadFileSerializer(serializers.ModelSerializer):
 
 
 class SmsSerializer(serializers.Serializer):
+    """
+    发送短信;验证手机号
+    """
     phone = serializers.CharField(min_length=11, max_length=11, label='手机号')
 
     def validate(self, attrs):
@@ -66,6 +75,9 @@ class SmsSerializer(serializers.Serializer):
 
 
 class BaseRegisterSerializer(serializers.Serializer):
+    """
+    用户注册序列化器
+    """
     phone = serializers.CharField(min_length=11, max_length=11, label='手机号')
     password = serializers.CharField(min_length=6, max_length=18, label='密码')
     subpassword = serializers.CharField(min_length=6, max_length=18, label='验证密码')
@@ -104,6 +116,9 @@ class BaseRegisterSerializer(serializers.Serializer):
 
 
 class ForgetPasswordSerializer(BaseRegisterSerializer):
+    """
+    忘记密码
+    """
 
     def validate(self, attrs):
         phone = attrs.get('phone')
@@ -147,10 +162,13 @@ class PatientSerializer(serializers.ModelSerializer):
     class Meta:
         model = PatientUser
         fields = '__all__'
-        read_only_fields = ['owner']
+        read_only_fields = ['owner', ]
 
 
 class PatientInfoSerializer(serializers.Serializer):
+    """
+    PatientInfoView 的序列化器
+    """
     USER_SEX_CHOICES = (
         ('男', '男'),
         ('女', '女'),
@@ -234,6 +252,9 @@ class DoctorUpdateSerializer(serializers.ModelSerializer):
 
 
 class DoctorRetrieveSerializer(serializers.ModelSerializer):
+    """
+    : 医生相关信息序列化器
+    """
     username = serializers.StringRelatedField(label='医生姓名', read_only=True, source='owner.username')
     email = serializers.StringRelatedField(label='医生邮箱', read_only=True, source='owner.email')
     phone = serializers.StringRelatedField(label='医生电话', read_only=True, source='owner.phone')
@@ -250,6 +271,9 @@ class DoctorRetrieveSerializer(serializers.ModelSerializer):
 
 
 class PatientRetrieveSerializer(serializers.ModelSerializer):
+    """
+    : 患者相关信息序列化器
+    """
     username = serializers.StringRelatedField(label='患者姓名', read_only=True, source='owner.username')
     email = serializers.StringRelatedField(label='患者邮箱', read_only=True, source='owner.email')
     phone = serializers.StringRelatedField(label='患者电话', read_only=True, source='owner.phone')
@@ -260,7 +284,8 @@ class PatientRetrieveSerializer(serializers.ModelSerializer):
         model = PatientUser
         fields = ('id', 'username', 'email', 'phone', 'sex', 'age', 'position',
                   'image_count', 'video_count', 'referral_count', 'patient_state',
-                  'nick_name', 'id_card', 'birthday')
+                  'nick_name', 'id_card', 'birthday', 'level_point', 'level_info',
+                  'level_discount')
 
 
 class DoctorSerializer(serializers.ModelSerializer):
