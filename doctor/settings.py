@@ -97,7 +97,7 @@ DATABASES = {
         'NAME': 'admin',
         'HOST': '127.0.0.1',
         'PORT': 3306,
-        'PASSWORD': 'mysql',
+        'PASSWORD': 'shuiqing',
         'USER': 'root'
     }
 }
