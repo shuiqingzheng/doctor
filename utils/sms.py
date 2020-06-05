@@ -10,7 +10,7 @@ def aliyun_send_sms_common_api(action, query_param_dict):
     :return:
     """
     # client = AcsClient('<accessKeyId>', '<accessSecret>', 'default')
-    client = AcsClient('LTAI9V9D3ixqyDwB', 'Wg8NPITDXdyKmDAcd8aSOSBsE0OoxB', "cn-hangzhou")
+    client = AcsClient('****************', '******************************', "***********")
     request = CommonRequest()
     request.set_accept_format('json')
     request.set_domain('dysmsapi.aliyuncs.com')
